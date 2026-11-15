@@ -1,7 +1,7 @@
 # Joint+ — Plan
 
-Personal, offline, cross-platform (Flutter) rehab app. Progressions are data, not code.
-First program: **Knee — inflammation + meniscus strain**, starting at "settling down" stage.
+Offline, cross-platform (Flutter) rehab app. Progressions are data, not code.
+First program: **Knee — inflammation + meniscus strain**.
 
 > Not medical advice. This progression follows common evidence-informed patterns
 > (criteria-based phases, the pain-monitoring model, protecting the meniscus from loaded deep
@@ -137,8 +137,8 @@ while pain stays ≤3/10. Walks are optional extras, not counted in session time
 - [ ] Pain rules met for 14 days → **maintenance mode** (2×/week, picked from Phase 3–4)
 
 ### Entry check
-When the program starts, a short self-test runs through the Phase 1 gate questions. Your answers
-suggest Phase 1 or Phase 2 (you said "settling down", which likely means late Phase 1 or early Phase 2).
+When the program starts, a short self-test runs through the Phase 1 gate questions. Yes to all of
+them suggests Phase 2; anything else suggests Phase 1. Either can be chosen.
 
 ---
 
