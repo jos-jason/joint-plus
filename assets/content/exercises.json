@@ -3,7 +3,7 @@
   "exercises": [
     {
       "id": "heel_slide", "name": "Heel Slide",
-      "kind": "reps", "sides": "affected", "equipment": ["none"],
+      "kind": "reps", "repSec": 5, "sides": "affected", "equipment": ["none"],
       "summary": "Gets the knee bending again without load.",
       "cues": [
         "Lie on your back, legs straight",
@@ -26,7 +26,7 @@
     },
     {
       "id": "straight_leg_raise", "name": "Straight Leg Raise",
-      "kind": "reps", "sides": "affected", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "affected", "equipment": ["none"],
       "summary": "Builds quad strength with the knee locked straight.",
       "cues": [
         "Lie on your back, other knee bent with the foot flat",
@@ -62,7 +62,7 @@
     },
     {
       "id": "tke_band", "name": "Terminal Knee Extension",
-      "kind": "reps", "sides": "affected", "equipment": ["band"],
+      "kind": "reps", "repSec": 4, "sides": "affected", "equipment": ["band"],
       "summary": "Trains the last few degrees of straightening.",
       "cues": [
         "Loop the band behind the knee, anchored in front at knee height",
@@ -73,7 +73,7 @@
     },
     {
       "id": "glute_bridge", "name": "Glute Bridge",
-      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "together", "equipment": ["none"],
       "summary": "Strengthens the glutes, which control where the knee points.",
       "cues": [
         "On your back, knees bent, feet flat and hip-width apart",
@@ -183,7 +183,7 @@
     },
     {
       "id": "monkii_hamstring_curl", "name": "Suspension Hamstring Curl",
-      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "kind": "reps", "repSec": 4, "sides": "together", "equipment": ["monkii"],
       "summary": "Strengthens the hamstrings, which help steady the knee.",
       "cues": [
         "Lie on your back, heels in the foot cradles, anchor low",
@@ -195,7 +195,7 @@
     },
     {
       "id": "single_leg_bridge", "name": "Single-Leg Bridge",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["none"],
       "summary": "Harder glute work, one side at a time.",
       "cues": [
         "On your back, one foot planted, the other leg straight in the air",
@@ -207,7 +207,7 @@
     },
     {
       "id": "lateral_band_walk", "name": "Lateral Band Walk",
-      "kind": "reps", "sides": "together", "equipment": ["band"],
+      "kind": "reps", "repSec": 2, "sides": "together", "equipment": ["band"],
       "summary": "Hip strength for keeping the knee in line. Each rep is one step.",
       "cues": [
         "Band above the knees or around the ankles, quarter-squat stance",
@@ -254,7 +254,7 @@
     },
     {
       "id": "bulgarian_split_squat", "name": "Bulgarian Split Squat",
-      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["step"],
       "summary": "Heavy single-leg strength work.",
       "cues": [
         "Back foot on a step or bench behind you",
@@ -266,7 +266,7 @@
     },
     {
       "id": "forward_step_down", "name": "Forward Step-Down",
-      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["step"],
       "summary": "Trains slow, controlled lowering. This is also a key test movement.",
       "cues": [
         "Stand on a 15–20 cm step, the other leg hanging forward",
@@ -278,7 +278,7 @@
     },
     {
       "id": "single_leg_box_squat", "name": "Single-Leg Squat to Box",
-      "kind": "reps", "sides": "each", "equipment": ["chair"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["chair"],
       "summary": "A full single-leg squat, with a box or chair marking the depth.",
       "cues": [
         "A box or chair behind you, standing on one leg",
@@ -290,7 +290,7 @@
     },
     {
       "id": "monkii_single_leg_curl", "name": "Single-Leg Suspension Curl",
-      "kind": "reps", "sides": "each", "equipment": ["monkii"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["monkii"],
       "summary": "The hamstring curl on one leg at a time.",
       "cues": [
         "Set up as for the hamstring curl: one heel in a cradle, other leg raised",
@@ -302,7 +302,7 @@
     },
     {
       "id": "single_leg_rdl", "name": "Single-Leg Romanian Deadlift",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["none"],
       "summary": "Hamstring and glute strength plus balance.",
       "cues": [
         "Stand on one leg, knee soft",
@@ -325,7 +325,7 @@
     },
     {
       "id": "deep_squat", "name": "Deep Squat",
-      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "together", "equipment": ["none"],
       "summary": "Brings back full knee bend gradually, only while it stays pain-free.",
       "cues": [
         "Feet shoulder-width, toes turned slightly out",
@@ -337,7 +337,7 @@
     },
     {
       "id": "squat_jump", "name": "Squat Jump",
-      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "together", "equipment": ["none"],
       "summary": "First impact work: learning to land softly.",
       "cues": [
         "Quarter squat, swing the arms",
@@ -350,7 +350,7 @@
     },
     {
       "id": "forward_hop_stick", "name": "Hop and Stick",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 5, "sides": "each", "equipment": ["none"],
       "summary": "Single-leg landing control.",
       "cues": [
         "Start with two-leg hops, then progress to one leg",
@@ -363,7 +363,7 @@
     },
     {
       "id": "lateral_hop", "name": "Lateral Hop",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["none"],
       "summary": "Side-to-side landing control (skater hops).",
       "cues": [
         "Jump sideways from one leg to the other",
@@ -375,7 +375,7 @@
     },
     {
       "id": "deceleration_drill", "name": "Deceleration Drill",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 8, "sides": "each", "equipment": ["none"],
       "summary": "Stopping safely from a jog.",
       "cues": [
         "Jog 5–10 m",
@@ -388,7 +388,7 @@
     },
     {
       "id": "pivot_drill", "name": "Pivot Drill",
-      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["none"],
       "summary": "Brings back controlled twisting, the last movement the meniscus gets back.",
       "cues": [
         "Stand on one leg, knee slightly bent",

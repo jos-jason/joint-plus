@@ -99,7 +99,10 @@ void main() {
     expect(find.text('5 × 30–45 s'), findsOneWidget);
     expect(find.text('Rest 60 s between sets'), findsOneWidget);
     expect(find.text('HOW TO'), findsOneWidget);
-    expect(find.bySemanticsLabel('Drawing of Shallow Wall Sit'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Drawing of Shallow Wall Sit'),
+      findsOneWidget,
+    );
 
     await scrollTo(tester, find.text('Spanish Squat'));
     await tester.tap(find.text('Spanish Squat'));
@@ -146,27 +149,47 @@ void main() {
     expect(find.text('TIMER RING'), findsOneWidget);
   });
 
-  testWidgets('session player runs pain check, timed hold, rest and summary', (
-    tester,
-  ) async {
-    await pumpApp(tester);
-
+  /// Opens the strength session and gets past the opening pain check.
+  /// From here timers run, so tests pump fixed durations, not pumpAndSettle.
+  Future<void> startSession(WidgetTester tester, {String pain = '2'}) async {
     await tester.tap(find.text('START SESSION'));
     await tester.pumpAndSettle();
     expect(find.text('How does the knee feel right now?'), findsOneWidget);
-    await tester.tap(find.text('2'));
+    await tester.tap(find.text(pain));
     await tester.pump();
     await tester.tap(find.text('START'));
-    await tester.pumpAndSettle();
     await tester.pump(settle);
+  }
 
-    // Shallow Wall Sit: 5 × 30–45 s hold.
+  testWidgets('session flows on its own: up next, get ready, hold, rest', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    await startSession(tester);
+
+    // "Up next" shows the exercise and dose, then moves on by itself.
+    expect(find.text('UP NEXT · 1 / 6'), findsOneWidget);
     expect(find.text('Shallow Wall Sit'), findsOneWidget);
+    expect(find.text('5 × 30–45 s'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 20));
+
+    // Each set starts with a 3-2-1, then the hold clock runs.
     expect(find.text('SET 1 OF 5'), findsOneWidget);
-    await tester.tap(find.text('START'));
+    expect(find.text('GET READY'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 3));
     await tester.pump(const Duration(seconds: 30));
     expect(find.text('30'), findsOneWidget);
     expect(find.text('TARGET REACHED · UP TO 45 S'), findsOneWidget);
+
+    // Tapping the ring pauses the clock, and again resumes it.
+    await tester.tap(find.bySemanticsLabel(RegExp('^Pause timer')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 5));
+    expect(find.text('30'), findsOneWidget);
+    expect(find.text('PAUSED · TAP TO RESUME'), findsOneWidget);
+    await tester.tap(find.bySemanticsLabel(RegExp('^Resume timer')));
+    await tester.pump();
+
     await tester.tap(find.text('DONE'));
     await tester.pump();
     // A quick second tap is ignored while the rest screen settles in.
@@ -175,8 +198,12 @@ void main() {
     expect(find.text('REST'), findsOneWidget);
     await tester.pump(settle);
 
+    // +15 s stretches the rest; then it runs into the next set by itself.
+    await tester.tap(find.text('+15 S'));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 60));
     expect(find.text('REST'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 60)); // rest runs out by itself
+    await tester.pump(const Duration(seconds: 15));
     expect(find.text('SET 2 OF 5'), findsOneWidget);
 
     // Skip the rest of the session.
@@ -209,6 +236,49 @@ void main() {
     expect(find.text('Strength  ·  Sat 14 Nov'), findsOneWidget);
     expect(find.textContaining('0/6 exercises'), findsOneWidget);
     expect(find.bySemanticsLabel('Sat 14 Nov, session done'), findsOneWidget);
+  });
+
+  testWidgets('reps count themselves at the exercise pace', (tester) async {
+    await pumpApp(tester);
+    await startSession(tester);
+
+    // Skip the wall sit from its "up next" screen; start the band TKE now.
+    await tester.tap(find.text('SKIP'));
+    await tester.pump(settle);
+    expect(find.text('Terminal Knee Extension'), findsOneWidget);
+    await tester.tap(find.text('START NOW'));
+    await tester.pump(settle);
+    await tester.pump(const Duration(seconds: 3)); // get ready
+
+    // 1 rep every 4 s: five reps after 20 s.
+    await tester.pump(const Duration(seconds: 20));
+    expect(find.text('5'), findsOneWidget);
+    expect(find.text('OF 15 REPS'), findsOneWidget);
+    expect(find.text('1 rep every 4 s'), findsOneWidget);
+
+    // At 15 the set finishes by itself and the rest starts.
+    await tester.pump(const Duration(seconds: 40));
+    expect(find.text('REST'), findsOneWidget);
+  });
+
+  testWidgets('one-leg sets get a short switch between sides', (tester) async {
+    await pumpApp(tester);
+    await startSession(tester);
+
+    // Skip ahead to the clamshell (each leg).
+    for (var i = 0; i < 3; i++) {
+      await tester.tap(find.text('SKIP'));
+      await tester.pump(settle);
+    }
+    expect(find.text('Clamshell'), findsOneWidget);
+    await tester.tap(find.text('START NOW'));
+    await tester.pump(settle);
+    expect(find.text('SET 1 OF 3  ·  INJURED LEG'), findsOneWidget);
+    await tester.tap(find.text('DONE'));
+    await tester.pump(settle);
+    expect(find.text('SWITCH LEGS'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 8));
+    expect(find.text('SET 1 OF 3  ·  OTHER LEG'), findsOneWidget);
   });
 
   testWidgets('morning check-in saves and shows on Today', (tester) async {
@@ -248,19 +318,13 @@ void main() {
 
   testWidgets('leaving a started session asks first', (tester) async {
     await pumpApp(tester);
-
-    await tester.tap(find.text('START SESSION'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('0'));
-    await tester.pump();
-    await tester.tap(find.text('START'));
-    await tester.pumpAndSettle();
+    await startSession(tester, pain: '0');
 
     await tester.tap(find.byIcon(Icons.close));
-    await tester.pumpAndSettle();
+    await tester.pumpAndSettle(); // the clock pauses while the dialog is open
     expect(find.text('End session?'), findsOneWidget);
     await tester.tap(find.text('KEEP GOING'));
-    await tester.pumpAndSettle();
+    await tester.pump(settle);
     expect(find.text('Shallow Wall Sit'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.close));

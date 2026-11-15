@@ -382,7 +382,8 @@ def session_block(ph, kind):
     for d in s["items"]:
         ex = EX[d["ex"]]
         rest = d.get("restSec", s["restSec"])
-        rest_s = f"rest {rest} s" if d["sets"] > 1 else ""
+        pace = f"1 rep / {ex.get('repSec', 3)} s" if ex["kind"] == "reps" else ""
+        rest_s = " · ".join(x for x in [pace, f"rest {rest} s" if d["sets"] > 1 else ""] if x)
         opt = '<span class="opt">Optional</span>' if d.get("optional") else ""
         note = f'<div class="note">{E(d["note"])}</div>' if d.get("note") else ""
         rows.append(f"""
@@ -556,7 +557,9 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
         and a Pocket Monkii suspension trainer (straps from a door anchor) used to unload squats and split squats early on.</p>
         <h3 style="margin-top:12px">Each session in the app</h3>
         <p class="muted" style="font-size:.95rem">Pain is rated 0–10 before starting and as the worst pain after finishing. The player guides one set at a time,
-        injured leg first, with hold and rest timers. Cue on every rep set: <em>the last 2–3 reps should feel hard; pain up to {pr['maxDuring']}/10 is fine.</em></p>
+        injured leg first. It runs hands-free: each exercise opens with a 20 s "up next" preview, every set starts with a 3-2-1,
+        reps are counted at a set pace for each exercise (shown as "1 rep / N s"), holds and rests are timed, and one-leg sets get an 8 s pause to switch legs.
+        Any timer can be paused, extended by 15 s or cut short. Cue on every rep set: <em>the last 2–3 reps should feel hard; pain up to {pr['maxDuring']}/10 is fine.</em></p>
       </div>
     </div>
   </div>

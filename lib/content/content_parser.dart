@@ -49,11 +49,20 @@ class ContentParser {
     final list = root.objects('exercises');
     for (final r in list) {
       final id = r.str('id');
+      final kind = r.enumValue('kind', ExerciseKind.values, ExerciseKind.reps);
+      final repSec = r.intOpt('repSec');
+      if (repSec != null && kind != ExerciseKind.reps) {
+        errors.add('${r.path}: repSec only applies to reps exercises');
+      }
+      if (repSec != null && (repSec < 1 || repSec > 20)) {
+        errors.add('${r.path}: repSec must be between 1 and 20');
+      }
       final ex = Exercise(
         id: id,
         name: r.str('name'),
         summary: r.str('summary'),
-        kind: r.enumValue('kind', ExerciseKind.values, ExerciseKind.reps),
+        kind: kind,
+        repSec: repSec ?? Exercise.defaultRepSec,
         sides: r.enumValue('sides', Sides.values, Sides.together),
         equipment: r.enumList('equipment', Equipment.values),
         cues: r.strings('cues', minLength: 1),

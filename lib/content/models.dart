@@ -39,7 +39,11 @@ class Exercise {
     required this.mistakes,
     this.easier,
     this.harder,
+    this.repSec = defaultRepSec,
   });
+
+  /// Pace used to count reps when none is given.
+  static const defaultRepSec = 3;
 
   final String id;
   final String name;
@@ -49,6 +53,9 @@ class Exercise {
   final List<Equipment> equipment;
   final List<String> cues;
   final List<String> mistakes;
+
+  /// Seconds per rep: the pace the session player counts at (reps only).
+  final int repSec;
 
   /// Regression / progression exercise ids.
   final String? easier;
@@ -127,8 +134,11 @@ class SessionTemplate {
   final int restSec;
   final List<Dose> items;
 
-  static const _secondsPerRep = 4;
-  static const _transitionSec = 20;
+  /// "Up next" countdown before each exercise.
+  static const transitionSec = 20;
+
+  /// Countdown to change legs between the sides of a one-leg set.
+  static const sideSwitchSec = 8;
 
   /// The items that make up the session proper.
   Iterable<Dose> get required => items.where((d) => !d.optional);
@@ -143,12 +153,13 @@ class SessionTemplate {
       final ex = exercises[d.exerciseId]!;
       final work = d.isTimed
           ? (d.secondsMax ?? d.seconds!)
-          : (d.repsMax ?? d.reps!) * _secondsPerRep;
-      // Sides are done back to back, so rest only falls between sets.
+          : (d.repsMax ?? d.reps!) * ex.repSec;
+      // Sides run back to back with a short switch; rest falls between sets.
       final sides = ex.sides == Sides.each ? 2 : 1;
       final rest = d.restSec ?? restSec;
       total += d.sets * work * sides + (d.sets - 1) * rest;
-      total += _transitionSec;
+      total += d.sets * (sides - 1) * sideSwitchSec;
+      total += transitionSec;
     }
     return (total / 60).ceil();
   }

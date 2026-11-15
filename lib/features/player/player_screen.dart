@@ -43,13 +43,23 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   bool _saveStarted = false;
   bool _saveFailed = false;
 
-  /// Seconds on the current step's clock (hold, timed activity or rest).
+  /// Seconds counted on the current step: time into a set, or into a break.
   int _elapsed = 0;
+
+  /// "Get ready" seconds left before a set's clock starts.
+  int _lead = 0;
+
+  /// Seconds added to the current break with "+15 s".
+  int _extra = 0;
+
+  bool _paused = false;
   Timer? _timer;
 
   /// Runs briefly after each step change. The main button sits in the same
   /// place on every step, so a double tap would otherwise skip a set.
   Timer? _settle;
+
+  static const _leadIn = 3;
 
   @override
   void initState() {
@@ -67,7 +77,6 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
   }
 
   SessionFlow get flow => _flow!;
-  bool get _running => _timer != null;
 
   /// Ignores taps that land while a new step is settling in.
   VoidCallback? _guard(VoidCallback? action) => action == null
@@ -78,40 +87,80 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   // ------------------------------------------------------------------ clock
 
-  void _start() {
+  bool get _timed => flow.step is WorkStep || flow.step is BreakStep;
+
+  void _run() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
-    setState(() {});
+    _timer = _timed && !_paused
+        ? Timer.periodic(const Duration(seconds: 1), (_) => _tick())
+        : null;
+  }
+
+  void _togglePause() {
+    if (!_timed) return;
+    setState(() => _paused = !_paused);
+    HapticFeedback.selectionClick();
+    _run();
+  }
+
+  void _pause() {
+    if (_paused || !_timed) return;
+    setState(() => _paused = true);
+    _run();
   }
 
   void _tick() {
+    final step = flow.step;
+    if (step is WorkStep && _lead > 0) {
+      setState(() => _lead--);
+      _lead > 0 ? HapticFeedback.lightImpact() : HapticFeedback.mediumImpact();
+      return;
+    }
     setState(() => _elapsed++);
-    switch (flow.step) {
-      case RestStep(:final seconds) when _elapsed >= seconds:
-        HapticFeedback.heavyImpact();
-        _go(flow.next);
+    switch (step) {
+      case BreakStep(:final seconds):
+        final left = seconds + _extra - _elapsed;
+        if (left <= 0) {
+          HapticFeedback.heavyImpact();
+          _go(flow.next);
+        } else if (left <= 3) {
+          HapticFeedback.lightImpact();
+        }
       case WorkStep(:final dose) when dose.isTimed:
         if (_elapsed == dose.seconds) HapticFeedback.mediumImpact();
         if (_elapsed >= (dose.secondsMax ?? dose.seconds!)) {
           HapticFeedback.heavyImpact();
           _go(flow.next);
         }
+      case WorkStep(:final dose, :final exercise):
+        if (_elapsed % exercise.repSec != 0) return;
+        final reps = _elapsed ~/ exercise.repSec;
+        if (reps >= (dose.repsMax ?? dose.reps!)) {
+          HapticFeedback.heavyImpact();
+          _go(flow.next);
+        } else if (reps == dose.reps) {
+          HapticFeedback.mediumImpact();
+        } else {
+          HapticFeedback.selectionClick();
+        }
       default:
         break;
     }
   }
 
-  /// Applies a change to the flow and resets the clock for the new step.
+  /// Applies a change to the flow and starts the new step's clock: sets get
+  /// a short "get ready" count, breaks count down straight away.
   void _go(VoidCallback change) {
-    _timer?.cancel();
-    _timer = null;
     _settle?.cancel();
     _settle = Timer(const Duration(milliseconds: 400), () {});
     setState(() {
       change();
       _elapsed = 0;
+      _extra = 0;
+      _paused = false;
+      _lead = flow.step is WorkStep ? _leadIn : 0;
     });
-    if (flow.step is RestStep) _start();
+    _run();
     if (flow.finished && !_saveStarted) _save();
   }
 
@@ -140,6 +189,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       _leave();
       return;
     }
+    final wasPaused = _paused;
+    _pause();
     final end = await showStarkConfirm(
       context,
       title: 'End session?',
@@ -150,7 +201,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
       cancel: 'Keep going',
       destructive: true,
     );
-    if (end) _leave();
+    if (end) {
+      _leave();
+    } else if (!wasPaused && mounted) {
+      _togglePause();
+    }
   }
 
   void _leave() {
@@ -193,8 +248,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                   _TopBar(
                     counter: _counter(),
                     onClose: _close,
-                    onSkip: flow.step is WorkStep
-                        ? () => _go(flow.skipExercise)
+                    onSkip: flow.step is WorkStep || flow.step is UpNextStep
+                        ? _guard(() => _go(flow.skipExercise))
                         : null,
                   ),
                   _ProgressLine(value: flow.progress),
@@ -237,16 +292,25 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final WorkStep s => _WorkView(
       step: s,
       elapsed: _elapsed,
-      running: _running,
+      lead: _lead,
+      paused: _paused,
       maxPain: _painRules.maxDuring,
-      onStart: _guard(_start)!,
+      onTogglePause: _togglePause,
       onDone: _guard(() => _go(flow.next))!,
-      onInfo: () => context.push(Routes.exercise(s.exercise.id)),
+      onInfo: () {
+        _pause();
+        context.push(Routes.exercise(s.exercise.id));
+      },
     ),
-    final RestStep s => _RestView(
-      seconds: s.seconds,
+    final BreakStep s => _BreakView(
+      step: s,
+      total: s.seconds + _extra,
       elapsed: _elapsed,
+      paused: _paused,
       upNext: flow.upNext,
+      counter: _counter(),
+      onTogglePause: _togglePause,
+      onMore: () => setState(() => _extra += 15),
       onSkip: _guard(() => _go(flow.next))!,
     ),
     SummaryStep() => _SummaryView(
@@ -432,22 +496,57 @@ class _PainView extends StatelessWidget {
   }
 }
 
+/// The timer ring with a tap target to pause and resume.
+class _Ring extends StatelessWidget {
+  const _Ring({
+    required this.progress,
+    required this.paused,
+    required this.onTap,
+    required this.child,
+    this.size = 200,
+  });
+
+  final double progress;
+  final bool paused;
+  final VoidCallback onTap;
+  final Widget child;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: paused ? 'Resume timer' : 'Pause timer',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Opacity(
+          opacity: paused ? 0.45 : 1,
+          child: TimerRing(size: size, progress: progress, child: child),
+        ),
+      ),
+    );
+  }
+}
+
 class _WorkView extends StatelessWidget {
   const _WorkView({
     required this.step,
     required this.elapsed,
-    required this.running,
+    required this.lead,
+    required this.paused,
     required this.maxPain,
-    required this.onStart,
+    required this.onTogglePause,
     required this.onDone,
     required this.onInfo,
   });
 
   final WorkStep step;
   final int elapsed;
-  final bool running;
+  final int lead;
+  final bool paused;
   final int maxPain;
-  final VoidCallback onStart;
+  final VoidCallback onTogglePause;
   final VoidCallback onDone;
   final VoidCallback onInfo;
 
@@ -461,9 +560,7 @@ class _WorkView extends StatelessWidget {
     ].nonNulls.join('  ·  ');
 
     return _Frame(
-      button: d.isTimed && !running
-          ? StarkButton(label: 'Start', onPressed: onStart)
-          : StarkButton(label: 'Done', onPressed: onDone),
+      button: StarkButton(label: 'Done', onPressed: onDone),
       children: [
         if (where.isNotEmpty) SectionLabel(where, color: JColors.green),
         const SizedBox(height: JSpace.sm),
@@ -490,7 +587,13 @@ class _WorkView extends StatelessWidget {
         ),
         const Spacer(),
         const SizedBox(height: JSpace.md),
-        Center(child: d.isTimed ? _hold(d) : _reps(d)),
+        Center(
+          child: lead > 0
+              ? _ready()
+              : d.isTimed
+              ? _hold(d)
+              : _reps(d),
+        ),
         const SizedBox(height: JSpace.lg),
         const Spacer(),
         for (final (i, cue) in step.exercise.cues.take(3).indexed)
@@ -525,16 +628,56 @@ class _WorkView extends StatelessWidget {
     );
   }
 
-  Widget _reps(Dose d) {
-    final range = d.repsMax == null || d.repsMax == d.reps
-        ? '${d.reps}'
-        : '${d.reps}–${d.repsMax}';
-    return Column(
+  Widget _status(String text) =>
+      SectionLabel(paused ? 'Paused · tap to resume' : text);
+
+  Widget _ready() => _Ring(
+    size: 176,
+    progress: 0,
+    paused: paused,
+    onTap: onTogglePause,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(range, style: JType.display.copyWith(fontSize: 84)),
+        Text('$lead', style: JType.display.copyWith(color: JColors.green)),
         const SizedBox(height: JSpace.sm),
-        const SectionLabel('reps'),
+        _status('Get ready'),
       ],
+    ),
+  );
+
+  Widget _reps(Dose d) {
+    final pace = step.exercise.repSec;
+    final target = d.reps!;
+    final max = d.repsMax ?? target;
+    final done = elapsed ~/ pace;
+    final reached = done >= target;
+    final range = max == target ? '$target' : '$target–$max';
+    return _Ring(
+      size: 176,
+      progress: elapsed / (target * pace),
+      paused: paused,
+      onTap: onTogglePause,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '$done',
+            style: JType.display.copyWith(
+              color: reached ? JColors.green : JColors.white,
+            ),
+          ),
+          const SizedBox(height: JSpace.sm),
+          _status(
+            reached && max > target ? 'Up to $max reps' : 'of $range reps',
+          ),
+          const SizedBox(height: JSpace.xs),
+          Text(
+            '1 rep every $pace s',
+            style: JType.secondary.copyWith(fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 
@@ -543,19 +686,16 @@ class _WorkView extends StatelessWidget {
     final max = d.secondsMax ?? target;
     final reached = elapsed >= target;
     final minutes = max >= 120;
-    final String hint;
-    if (!running && elapsed == 0) {
-      hint = 'Target ${_amount(target, d.secondsMax, minutes)}';
-    } else if (reached && max > target) {
-      hint = 'Target reached · up to ${_amount(max, null, minutes)}';
-    } else {
-      hint = reached
-          ? 'Target reached'
-          : 'Target ${_amount(target, d.secondsMax, minutes)}';
-    }
-    return TimerRing(
-      size: 200,
+    final hint = reached && max > target
+        ? 'Target reached · up to ${_amount(max, null, minutes)}'
+        : reached
+        ? 'Target reached'
+        : 'Target ${_amount(target, d.secondsMax, minutes)}';
+    return _Ring(
+      size: 176,
       progress: elapsed / target,
+      paused: paused,
+      onTap: onTogglePause,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -566,68 +706,127 @@ class _WorkView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: JSpace.sm),
-          SectionLabel(hint),
+          _status(hint),
         ],
       ),
     );
   }
 }
 
-class _RestView extends StatelessWidget {
-  const _RestView({
-    required this.seconds,
+/// Rest between sets, switching legs, or "up next" before an exercise. All
+/// count down and move on by themselves.
+class _BreakView extends StatelessWidget {
+  const _BreakView({
+    required this.step,
+    required this.total,
     required this.elapsed,
+    required this.paused,
     required this.upNext,
+    required this.counter,
+    required this.onTogglePause,
+    required this.onMore,
     required this.onSkip,
   });
 
-  final int seconds;
+  final BreakStep step;
+  final int total;
   final int elapsed;
+  final bool paused;
   final PlayerStep? upNext;
+  final String? counter;
+  final VoidCallback onTogglePause;
+  final VoidCallback onMore;
   final VoidCallback onSkip;
 
   @override
   Widget build(BuildContext context) {
-    final left = (seconds - elapsed).clamp(0, seconds);
-    final next = upNext;
-    return _Frame(
-      button: StarkButton(label: 'Skip rest', onPressed: onSkip),
-      children: [
-        const SectionLabel('Rest'),
-        const SizedBox(height: JSpace.sm),
-        const Text('Breathe. Shake it out.', style: JType.title),
-        const Spacer(),
-        const SizedBox(height: JSpace.lg),
-        Center(
-          child: TimerRing(
-            size: 240,
-            progress: left / seconds,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _clock(left, minutes: seconds >= 120),
-                  style: JType.display,
-                ),
-                const SizedBox(height: JSpace.sm),
-                const SectionLabel('seconds left'),
-              ],
-            ),
+    final left = (total - elapsed).clamp(0, total);
+    final (label, title, action) = switch (step) {
+      RestStep() => ('Rest', 'Breathe. Shake it out.', 'Skip rest'),
+      SwitchStep() => ('Switch legs', 'Other leg next', 'Start now'),
+      UpNextStep() => (
+        counter == 'EXTRA' ? 'Up next · extra' : 'Up next · ${counter ?? ''}',
+        (step as UpNextStep).exercise.name,
+        'Start now',
+      ),
+    };
+    final ring = _Ring(
+      size: step is UpNextStep ? 150 : 220,
+      progress: left / total,
+      paused: paused,
+      onTap: onTogglePause,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            _clock(left, minutes: total >= 120),
+            style: step is UpNextStep
+                ? JType.display.copyWith(fontSize: 48)
+                : JType.display,
+          ),
+          const SizedBox(height: JSpace.xs),
+          SectionLabel(paused ? 'Paused' : 'seconds'),
+        ],
+      ),
+    );
+    final more = Center(
+      child: Semantics(
+        button: true,
+        label: 'Add 15 seconds',
+        excludeSemantics: true,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onMore,
+          child: const Padding(
+            padding: EdgeInsets.all(JSpace.md),
+            child: SectionLabel('+15 s', color: JColors.white),
           ),
         ),
-        const SizedBox(height: JSpace.lg),
-        const Spacer(),
-        if (next is WorkStep) ...[
-          const SectionLabel('Up next'),
-          const SizedBox(height: JSpace.sm),
-          Text(next.exercise.name, style: JType.heading),
+      ),
+    );
+
+    return _Frame(
+      button: StarkButton(label: action, onPressed: onSkip),
+      children: [
+        SectionLabel(label, color: JColors.green),
+        const SizedBox(height: JSpace.sm),
+        Text(title, style: JType.title),
+        if (step case UpNextStep(:final exercise, :final dose)) ...[
+          const SizedBox(height: JSpace.xs),
           Text(
-            [
-              'Set ${next.set} of ${next.dose.sets}',
-              ?next.side?.label,
-            ].join('  ·  '),
-            style: JType.secondary,
+            dose.describe(exercise),
+            style: JType.heading.copyWith(color: JColors.green),
           ),
+          const SizedBox(height: JSpace.md),
+          Center(
+            child: SizedBox(height: 168, child: ExerciseIllustration(exercise)),
+          ),
+          const Spacer(),
+          Center(child: ring),
+          more,
+          const Spacer(),
+          Text(exercise.cues.first, style: JType.body),
+          if (dose.note != null) ...[
+            const SizedBox(height: JSpace.sm),
+            Text(dose.note!, style: JType.secondary),
+          ],
+        ] else ...[
+          const Spacer(),
+          Center(child: ring),
+          more,
+          const Spacer(),
+          if (upNext case final WorkStep next) ...[
+            const SectionLabel('Up next'),
+            const SizedBox(height: JSpace.sm),
+            Text(next.exercise.name, style: JType.heading),
+            Text(
+              [
+                if (next.dose.sets > 1) 'Set ${next.set} of ${next.dose.sets}',
+                ?next.side?.label,
+              ].join('  ·  '),
+              style: JType.secondary,
+            ),
+          ],
         ],
       ],
     );

@@ -47,26 +47,44 @@ void main() {
     WorkStep(:final exercise, :final set, :final side) =>
       '${exercise.id}#$set${side == null ? '' : '-${side.name}'}',
     RestStep(:final seconds) => 'rest$seconds',
+    SwitchStep() => 'switch',
+    UpNextStep(:final exercise) => 'next:${exercise.id}',
     SummaryStep() => 'summary',
   };
 
-  test('builds sets, sides and rests in order, extras last', () {
+  test('builds sets, sides and breaks in order, extras last', () {
     expect(newFlow().steps.map(describe), [
       'pain-before',
+      'next:squat',
       'squat#1',
       'rest60',
       'squat#2',
-      // Sides run back to back; the dose's own rest overrides the default.
+      'next:lunge',
+      // A short switch between sides; the dose's own rest overrides the default.
       'lunge#1-injured',
+      'switch',
       'lunge#1-other',
       'rest90',
       'lunge#2-injured',
+      'switch',
       'lunge#2-other',
+      'next:hold',
       'hold#1-injured',
+      'next:walk',
       'walk#1',
       'pain-after',
       'summary',
     ]);
+  });
+
+  test('breaks use the session template timings', () {
+    final f = newFlow();
+    expect(f.steps.whereType<UpNextStep>().map((s) => s.seconds).toSet(), {
+      SessionTemplate.transitionSec,
+    });
+    expect(f.steps.whereType<SwitchStep>().map((s) => s.seconds).toSet(), {
+      SessionTemplate.sideSwitchSec,
+    });
   });
 
   test('counts a set only once every side is done', () {
@@ -81,14 +99,18 @@ void main() {
 
   test('skipping jumps past remaining sets and rests of that exercise', () {
     final f = newFlow()..painBefore = 1;
+    f.next(); // next:squat
     f.next(); // squat#1
     f.skipExercise();
-    expect(describe(f.step), 'lunge#1-injured');
+    expect(describe(f.step), 'next:lunge');
+    f.next(); // lunge#1-injured
+    f.next(); // switch
     f.next(); // lunge#1-other
     f.next(); // rest90
     f.skipExercise(); // works during rest too
-    expect(describe(f.step), 'hold#1-injured');
-    f.skipExercise();
+    expect(describe(f.step), 'next:hold');
+    f.skipExercise(); // skipping from "up next" skips that exercise
+    expect(describe(f.step), 'next:walk');
     f.skipExercise(); // the optional walk
     expect(describe(f.step), 'pain-after');
     f.skipExercise(); // no-op outside exercises
@@ -100,6 +122,7 @@ void main() {
     expect(f.started, isFalse);
     f.next();
     expect(f.started, isTrue);
+    f.next(); // next:squat
     f.next(); // squat#1 done
     f.skipExercise(); // skip squat set 2
     while (f.step is! PainStep) {

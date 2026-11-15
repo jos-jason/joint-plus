@@ -55,12 +55,35 @@ final class WorkStep extends ItemStep {
   final bool lastSide;
 }
 
-/// Rest between sets of the same exercise. Sides run back to back, and moving
-/// to the next exercise is up to you, so neither gets a timed rest.
-final class RestStep extends ItemStep {
-  const RestStep({required super.item, required this.seconds});
+/// A timed break. Each runs down on its own and then moves on, so a session
+/// flows without tapping; any of them can be cut short or extended.
+sealed class BreakStep extends ItemStep {
+  const BreakStep({required super.item, required this.seconds});
 
   final int seconds;
+}
+
+/// Rest between sets of the same exercise.
+final class RestStep extends BreakStep {
+  const RestStep({required super.item, required super.seconds});
+}
+
+/// A few seconds to change legs between the two sides of a set.
+final class SwitchStep extends BreakStep {
+  const SwitchStep({required super.item, required super.seconds});
+}
+
+/// Before each exercise: what's next, and time to set up for it.
+final class UpNextStep extends BreakStep {
+  const UpNextStep({
+    required super.item,
+    required super.seconds,
+    required this.exercise,
+    required this.dose,
+  });
+
+  final Exercise exercise;
+  final Dose dose;
 }
 
 final class SummaryStep extends PlayerStep {
@@ -107,7 +130,7 @@ class SessionFlow {
   /// 0 → 1 across the whole session.
   double get progress => _index / (steps.length - 1);
 
-  /// The step after this one, e.g. to show "up next" during rest.
+  /// The step after this one, e.g. to show what's next during a break.
   PlayerStep? get upNext =>
       _index + 1 < steps.length ? steps[_index + 1] : null;
 
@@ -122,8 +145,21 @@ class SessionFlow {
         Sides.affected => const [LegSide.injured],
         Sides.together => const <LegSide?>[null],
       };
+      out.add(
+        UpNextStep(
+          item: i,
+          seconds: SessionTemplate.transitionSec,
+          exercise: ex,
+          dose: d,
+        ),
+      );
       for (var set = 1; set <= d.sets; set++) {
         for (final (s, side) in sides.indexed) {
+          if (s > 0) {
+            out.add(
+              SwitchStep(item: i, seconds: SessionTemplate.sideSwitchSec),
+            );
+          }
           out.add(
             WorkStep(
               item: i,

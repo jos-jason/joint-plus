@@ -45,7 +45,7 @@ extension GateCriterionLabel on GateCriterion {
 }
 
 extension ExerciseFacts on Exercise {
-  /// e.g. "Each leg · Step / box".
+  /// e.g. "Each leg · Step / box · 1 rep every 4 s".
   String get facts {
     final gear = equipment
         .where((e) => e != Equipment.none)
@@ -53,6 +53,7 @@ extension ExerciseFacts on Exercise {
     return [
       sides.label,
       if (gear.isEmpty) Equipment.none.label else ...gear,
+      if (kind == ExerciseKind.reps) '1 rep every $repSec s',
     ].join('  ·  ');
   }
 }
