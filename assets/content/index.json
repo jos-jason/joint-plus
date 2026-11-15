@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "exercises": "assets/content/exercises.json",
+  "programs": [
+    "assets/content/programs/knee_meniscus.json"
+  ]
+}

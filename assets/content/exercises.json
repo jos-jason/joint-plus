@@ -1,0 +1,402 @@
+{
+  "version": 1,
+  "exercises": [
+    {
+      "id": "heel_slide", "name": "Heel Slide",
+      "kind": "reps", "sides": "affected", "equipment": ["none"],
+      "summary": "Gets the knee bending again without load.",
+      "cues": [
+        "Lie on your back, legs straight",
+        "Slide the heel toward your buttock as far as is comfortable",
+        "Pause 2 s, then slide back until the knee is fully straight"
+      ],
+      "mistakes": ["Forcing into a pinch. A stretch is fine; sharp pain is not"]
+    },
+    {
+      "id": "quad_set", "name": "Quad Set",
+      "kind": "hold", "sides": "affected", "equipment": ["towel"],
+      "summary": "Switches the thigh muscle back on after swelling.",
+      "cues": [
+        "Sit or lie with the leg straight, small rolled towel under the knee",
+        "Tighten the thigh to press the back of the knee into the towel",
+        "The kneecap should glide upward. Hold, then fully relax"
+      ],
+      "mistakes": ["Squeezing the buttock instead of the thigh", "Holding your breath"],
+      "harder": "straight_leg_raise"
+    },
+    {
+      "id": "straight_leg_raise", "name": "Straight Leg Raise",
+      "kind": "reps", "sides": "affected", "equipment": ["none"],
+      "summary": "Builds quad strength with the knee locked straight.",
+      "cues": [
+        "Lie on your back, other knee bent with the foot flat",
+        "Do a quad set first to lock the knee straight",
+        "Lift to the height of the other knee, lower over 3 s"
+      ],
+      "mistakes": ["The knee bending as the leg lifts. Do quad sets until it stays straight"],
+      "easier": "quad_set"
+    },
+    {
+      "id": "calf_raise", "name": "Calf Raise",
+      "kind": "reps", "sides": "together", "equipment": ["wall"],
+      "summary": "Strengthens the calves, which help support the knee.",
+      "cues": [
+        "Stand tall, fingertips on a wall",
+        "Rise onto the balls of both feet, knees straight",
+        "Lower slowly over 2–3 s"
+      ],
+      "mistakes": ["Rolling out onto the little toes"],
+      "harder": "single_leg_calf_raise"
+    },
+    {
+      "id": "wall_sit_shallow", "name": "Shallow Wall Sit",
+      "kind": "hold", "sides": "together", "equipment": ["wall"],
+      "summary": "A static thigh hold. Holds like this often ease knee pain.",
+      "cues": [
+        "Back flat on the wall, feet a step out and hip-width apart",
+        "Slide down only to a slight bend (30–45°)",
+        "Knees over the middle toes, weight in the heels, keep breathing"
+      ],
+      "mistakes": ["Sliding too deep. Keep it shallow in Phase 1", "Knees caving inward"],
+      "harder": "spanish_squat"
+    },
+    {
+      "id": "tke_band", "name": "Terminal Knee Extension",
+      "kind": "reps", "sides": "affected", "equipment": ["band"],
+      "summary": "Trains the last few degrees of straightening.",
+      "cues": [
+        "Loop the band behind the knee, anchored in front at knee height",
+        "Start with the knee slightly bent; step back until the band is tight",
+        "Straighten the knee fully against the band, squeeze 2 s, release slowly"
+      ],
+      "mistakes": ["Leaning the hips back instead of straightening the knee"]
+    },
+    {
+      "id": "glute_bridge", "name": "Glute Bridge",
+      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "summary": "Strengthens the glutes, which control where the knee points.",
+      "cues": [
+        "On your back, knees bent, feet flat and hip-width apart",
+        "Push through the heels until shoulders, hips and knees are in a line",
+        "Pause 2 s at the top, lower slowly"
+      ],
+      "mistakes": ["Arching the low back instead of using the glutes"],
+      "harder": "single_leg_bridge"
+    },
+    {
+      "id": "clamshell_band", "name": "Clamshell",
+      "kind": "reps", "sides": "each", "equipment": ["band"],
+      "summary": "Works the hip muscles that stop the knee caving inward.",
+      "cues": [
+        "Lie on your side, hips and knees bent about 45°, band above the knees",
+        "Keep the feet together and the hips stacked",
+        "Open the top knee, pause, lower slowly"
+      ],
+      "mistakes": ["Rolling the top hip backward"],
+      "harder": "lateral_band_walk"
+    },
+    {
+      "id": "monkii_partial_squat", "name": "Assisted Partial Squat",
+      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "summary": "A shallow squat with the straps taking some of your weight.",
+      "cues": [
+        "Face the anchor, straps at chest height, arms straight",
+        "Sit back to about a quarter squat (60°)",
+        "Let the straps take as much weight as you need; drive up through the heels"
+      ],
+      "mistakes": ["Pulling yourself up with the arms. Arms help; legs do the work", "Knees drifting inward"],
+      "harder": "monkii_squat_90"
+    },
+    {
+      "id": "single_leg_balance", "name": "Single-Leg Balance",
+      "kind": "hold", "sides": "each", "equipment": ["wall"],
+      "summary": "Retrains the knee's sense of position and steadiness.",
+      "cues": [
+        "Stand on one leg near a wall, knee soft, not locked",
+        "Keep the hips level and your eyes on a fixed point",
+        "Touch the wall only if you need to"
+      ],
+      "mistakes": ["Locking the knee straight"],
+      "harder": "single_leg_balance_eyes_closed"
+    },
+    {
+      "id": "monkii_squat_90", "name": "Assisted Squat to 90°",
+      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "summary": "A squat to 90° with the straps helping.",
+      "cues": [
+        "Straps at chest height, lean back slightly",
+        "Sit back until the thighs are close to level (90°)",
+        "Use less help from the straps each week"
+      ],
+      "mistakes": ["Going deeper than 90°. Not yet"],
+      "easier": "monkii_partial_squat",
+      "harder": "bodyweight_squat_90"
+    },
+    {
+      "id": "bodyweight_squat_90", "name": "Squat to 90°",
+      "kind": "reps", "sides": "together", "equipment": ["chair"],
+      "summary": "An unassisted squat with a chair marking the depth.",
+      "cues": [
+        "Feet shoulder-width, a chair behind you to mark the depth",
+        "Sit back until you lightly touch the chair (about 90°)",
+        "Stand by pushing through the whole foot"
+      ],
+      "mistakes": ["Knees caving in", "Heels lifting"],
+      "easier": "monkii_squat_90",
+      "harder": "deep_squat"
+    },
+    {
+      "id": "spanish_squat", "name": "Spanish Squat",
+      "kind": "hold", "sides": "together", "equipment": ["band"],
+      "summary": "A squat hold with a band behind the knees. Works the thighs hard with little strain on the knee joint.",
+      "cues": [
+        "Loop a heavy band around a sturdy anchor and behind both knees",
+        "Step back until the band is tight, feet hip-width",
+        "Sit back with the shins upright; hold at a pain-free depth (90° at most)"
+      ],
+      "mistakes": ["Letting the knees travel forward past the toes"],
+      "easier": "wall_sit_shallow"
+    },
+    {
+      "id": "monkii_split_squat", "name": "Assisted Split Squat",
+      "kind": "reps", "sides": "each", "equipment": ["monkii"],
+      "summary": "The start of single-leg strength, with the straps steadying you.",
+      "cues": [
+        "Hold the straps, one foot forward, back heel up",
+        "Lower the back knee straight down a short way",
+        "Front knee over the middle toes; push up through the front heel"
+      ],
+      "mistakes": ["Front knee caving inward", "Going too deep too soon"],
+      "harder": "bulgarian_split_squat"
+    },
+    {
+      "id": "step_up", "name": "Step-Up",
+      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "summary": "Single-leg strength for stairs and climbing.",
+      "cues": [
+        "Whole foot on a 15–20 cm step",
+        "Lean slightly forward; drive through the heel to stand tall",
+        "Step back down slowly"
+      ],
+      "mistakes": ["Pushing off with the bottom leg", "Knee caving inward"],
+      "harder": "forward_step_down"
+    },
+    {
+      "id": "monkii_hamstring_curl", "name": "Suspension Hamstring Curl",
+      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "summary": "Strengthens the hamstrings, which help steady the knee.",
+      "cues": [
+        "Lie on your back, heels in the foot cradles, anchor low",
+        "Lift the hips into a bridge",
+        "Pull the heels toward you by bending the knees, then straighten slowly"
+      ],
+      "mistakes": ["Hips sagging during the curl"],
+      "harder": "monkii_single_leg_curl"
+    },
+    {
+      "id": "single_leg_bridge", "name": "Single-Leg Bridge",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Harder glute work, one side at a time.",
+      "cues": [
+        "On your back, one foot planted, the other leg straight in the air",
+        "Push through the planted heel to lift the hips, keeping them level",
+        "Lower slowly"
+      ],
+      "mistakes": ["Hips tipping to one side"],
+      "easier": "glute_bridge"
+    },
+    {
+      "id": "lateral_band_walk", "name": "Lateral Band Walk",
+      "kind": "reps", "sides": "together", "equipment": ["band"],
+      "summary": "Hip strength for keeping the knee in line. Each rep is one step.",
+      "cues": [
+        "Band above the knees or around the ankles, quarter-squat stance",
+        "Step sideways, keeping the band tight and toes facing forward",
+        "Don't let the feet come together"
+      ],
+      "mistakes": ["Standing up tall between steps"],
+      "easier": "clamshell_band"
+    },
+    {
+      "id": "single_leg_calf_raise", "name": "Single-Leg Calf Raise",
+      "kind": "reps", "sides": "each", "equipment": ["wall"],
+      "summary": "Calf strength for hopping and landing later.",
+      "cues": [
+        "Stand on one foot, fingertips on a wall",
+        "Rise as high as you can, knee straight",
+        "Lower over 3 s"
+      ],
+      "mistakes": ["Bending the knee to help"],
+      "easier": "calf_raise"
+    },
+    {
+      "id": "brisk_walk", "name": "Brisk Walk",
+      "kind": "duration", "sides": "together", "equipment": ["none"],
+      "summary": "Easy fitness work that keeps the knee moving.",
+      "cues": [
+        "A comfortable but purposeful pace",
+        "Flat ground first; hills later",
+        "Stop if you start limping or pain goes above 3/10"
+      ],
+      "mistakes": ["Pushing through a limp"]
+    },
+    {
+      "id": "single_leg_balance_eyes_closed", "name": "Eyes-Closed Balance",
+      "kind": "hold", "sides": "each", "equipment": ["wall"],
+      "summary": "Balance without help from your eyes.",
+      "cues": [
+        "Stand on one leg next to a wall or in a corner",
+        "Find your balance, then close your eyes",
+        "Open your eyes or touch the wall to recover, then restart"
+      ],
+      "mistakes": ["Locking the knee straight"],
+      "easier": "single_leg_balance"
+    },
+    {
+      "id": "bulgarian_split_squat", "name": "Bulgarian Split Squat",
+      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "summary": "Heavy single-leg strength work.",
+      "cues": [
+        "Back foot on a step or bench behind you",
+        "Lower straight down until the front thigh is close to level",
+        "Hold the Monkii straps for balance at first, then go without"
+      ],
+      "mistakes": ["Front heel lifting", "Knee caving inward"],
+      "easier": "monkii_split_squat"
+    },
+    {
+      "id": "forward_step_down", "name": "Forward Step-Down",
+      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "summary": "Trains slow, controlled lowering. This is also a key test movement.",
+      "cues": [
+        "Stand on a 15–20 cm step, the other leg hanging forward",
+        "Lower the free heel toward the floor over 3 s",
+        "Tap lightly, then stand back up; knee stays over the middle toes"
+      ],
+      "mistakes": ["Knee diving inward", "Dropping fast at the end"],
+      "easier": "step_up"
+    },
+    {
+      "id": "single_leg_box_squat", "name": "Single-Leg Squat to Box",
+      "kind": "reps", "sides": "each", "equipment": ["chair"],
+      "summary": "A full single-leg squat, with a box or chair marking the depth.",
+      "cues": [
+        "A box or chair behind you, standing on one leg",
+        "Sit back slowly to touch the box. Don't drop onto it",
+        "Stand up on one leg; hold the Monkii straps for help at first"
+      ],
+      "mistakes": ["Knee caving inward", "Rocking back and forth to get up"],
+      "easier": "bodyweight_squat_90"
+    },
+    {
+      "id": "monkii_single_leg_curl", "name": "Single-Leg Suspension Curl",
+      "kind": "reps", "sides": "each", "equipment": ["monkii"],
+      "summary": "The hamstring curl on one leg at a time.",
+      "cues": [
+        "Set up as for the hamstring curl: one heel in a cradle, other leg raised",
+        "Hold the bridge and curl the heel in",
+        "Straighten slowly over 3 s"
+      ],
+      "mistakes": ["Hips sagging"],
+      "easier": "monkii_hamstring_curl"
+    },
+    {
+      "id": "single_leg_rdl", "name": "Single-Leg Romanian Deadlift",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Hamstring and glute strength plus balance.",
+      "cues": [
+        "Stand on one leg, knee soft",
+        "Hinge at the hip, reaching the hands down as the free leg goes back",
+        "Keep the hips square to the floor; squeeze the glute to come back up"
+      ],
+      "mistakes": ["Rounding the back", "Hip turning open toward the ceiling"],
+      "easier": "single_leg_bridge"
+    },
+    {
+      "id": "side_plank", "name": "Side Plank",
+      "kind": "hold", "sides": "each", "equipment": ["none"],
+      "summary": "Trunk and hip strength for steadier legs.",
+      "cues": [
+        "On your side, elbow under the shoulder",
+        "Lift the hips so the body is in a straight line",
+        "Start from the knees if you need to"
+      ],
+      "mistakes": ["Hips sagging or pushed back"]
+    },
+    {
+      "id": "deep_squat", "name": "Deep Squat",
+      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "summary": "Brings back full knee bend gradually, only while it stays pain-free.",
+      "cues": [
+        "Feet shoulder-width, toes turned slightly out",
+        "Go below 90° only as far as it stays pain-free",
+        "Hold the Monkii straps for support at first"
+      ],
+      "mistakes": ["Pushing deeper through pain or a pinch"],
+      "easier": "bodyweight_squat_90"
+    },
+    {
+      "id": "squat_jump", "name": "Squat Jump",
+      "kind": "reps", "sides": "together", "equipment": ["none"],
+      "summary": "First impact work: learning to land softly.",
+      "cues": [
+        "Quarter squat, swing the arms",
+        "Small jumps at first",
+        "Land softly: toes then heels, knees over toes, sink into a squat"
+      ],
+      "mistakes": ["Stiff, loud landings", "Knees caving in on landing"],
+      "easier": "bodyweight_squat_90",
+      "harder": "forward_hop_stick"
+    },
+    {
+      "id": "forward_hop_stick", "name": "Hop and Stick",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Single-leg landing control.",
+      "cues": [
+        "Start with two-leg hops, then progress to one leg",
+        "Hop forward a short distance",
+        "Hold the landing still for 2 s, knee bent and over the toes"
+      ],
+      "mistakes": ["Landing with a straight knee"],
+      "easier": "squat_jump",
+      "harder": "lateral_hop"
+    },
+    {
+      "id": "lateral_hop", "name": "Lateral Hop",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Side-to-side landing control (skater hops).",
+      "cues": [
+        "Jump sideways from one leg to the other",
+        "Land softly on the outside leg and hold 1 s",
+        "Add distance only when landings are quiet and steady"
+      ],
+      "mistakes": ["Knee caving in on landing"],
+      "easier": "forward_hop_stick"
+    },
+    {
+      "id": "deceleration_drill", "name": "Deceleration Drill",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Stopping safely from a jog.",
+      "cues": [
+        "Jog 5–10 m",
+        "Slow down over 2–3 steps and finish balanced on one leg",
+        "Hips back, chest up, knee over the toes"
+      ],
+      "mistakes": ["Stopping on a straight knee"],
+      "easier": "forward_hop_stick",
+      "harder": "pivot_drill"
+    },
+    {
+      "id": "pivot_drill", "name": "Pivot Drill",
+      "kind": "reps", "sides": "each", "equipment": ["none"],
+      "summary": "Brings back controlled twisting, the last movement the meniscus gets back.",
+      "cues": [
+        "Stand on one leg, knee slightly bent",
+        "Turn 45–90° by pivoting on the ball of the foot",
+        "Start slow and small; add speed and angle over the weeks"
+      ],
+      "mistakes": ["Twisting on a straight, locked knee", "Rushing. Any catching or locking means stop"],
+      "easier": "deceleration_drill"
+    }
+  ]
+}

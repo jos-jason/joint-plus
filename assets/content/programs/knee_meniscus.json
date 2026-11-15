@@ -1,0 +1,183 @@
+{
+  "id": "knee_meniscus",
+  "version": 1,
+  "name": "Knee — Meniscus & Inflammation",
+  "shortName": "Knee",
+  "description": "Four phases that strengthen the muscles around the knee after inflammation and a meniscus strain. You move to the next phase when you pass its checks, not after a set time.",
+  "strengthDaysPerWeek": 3,
+  "painRules": { "maxDuring": 3, "settleHours": 24, "morningNoWorse": true },
+  "redFlags": [
+    "The knee locks or catches and won't fully straighten",
+    "The knee gives way",
+    "Sudden, large swelling",
+    "You can't put weight through the leg",
+    "Pain at rest or at night that keeps getting worse"
+  ],
+  "maintenance": "Twice a week, pick 4–5 exercises from Phases 3 and 4.",
+  "phases": [
+    {
+      "id": "p1",
+      "name": "Calm & Activate",
+      "goal": "Full straightening, the thigh muscle working again, swelling quiet.",
+      "minDays": 7,
+      "cautions": ["No loaded bending past 90°", "No twisting on the knee"],
+      "sessions": {
+        "daily": {
+          "name": "Mobility", "restSec": 15,
+          "items": [
+            { "ex": "heel_slide", "sets": 2, "reps": 15 },
+            { "ex": "quad_set", "sets": 10, "seconds": 5, "restSec": 5 },
+            { "ex": "straight_leg_raise", "sets": 3, "reps": 10 },
+            { "ex": "calf_raise", "sets": 2, "reps": 15 }
+          ]
+        },
+        "strength": {
+          "name": "Strength", "restSec": 60,
+          "items": [
+            { "ex": "wall_sit_shallow", "sets": 5, "seconds": 30, "secondsMax": 45 },
+            { "ex": "tke_band", "sets": 3, "reps": 15, "restSec": 45 },
+            { "ex": "glute_bridge", "sets": 3, "reps": 12, "restSec": 45 },
+            { "ex": "clamshell_band", "sets": 3, "reps": 15, "restSec": 30 },
+            { "ex": "monkii_partial_squat", "sets": 3, "reps": 12 },
+            { "ex": "single_leg_balance", "sets": 3, "seconds": 30, "restSec": 15 }
+          ]
+        }
+      },
+      "gate": [
+        { "id": "full_extension", "type": "check",
+          "text": "Your knee straightens fully, the same as the other side",
+          "help": "Sit with both legs out straight. The backs of both knees should flatten to the floor equally." },
+        { "id": "slr_no_lag", "type": "check",
+          "text": "3×15 straight leg raises with no knee bend" },
+        { "id": "balance_30", "type": "number", "min": 30, "unit": "s",
+          "text": "Single-leg balance on the injured leg" },
+        { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 7,
+          "text": "7 days meeting the pain rules, with no increase in swelling" }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Build Strength",
+      "goal": "Two-leg strength down to 90°, and the start of single-leg work.",
+      "minDays": 14,
+      "cautions": ["Keep loaded bending at 90° or less", "No twisting under load"],
+      "sessions": {
+        "daily": {
+          "name": "Mobility", "restSec": 15,
+          "items": [
+            { "ex": "heel_slide", "sets": 2, "reps": 15 },
+            { "ex": "straight_leg_raise", "sets": 2, "reps": 15 },
+            { "ex": "single_leg_calf_raise", "sets": 2, "reps": 12 },
+            { "ex": "lateral_band_walk", "sets": 2, "reps": 10,
+              "note": "10 steps each way." },
+            { "ex": "brisk_walk", "sets": 1, "seconds": 600, "secondsMax": 1200, "optional": true }
+          ]
+        },
+        "strength": {
+          "name": "Strength", "restSec": 60,
+          "items": [
+            { "ex": "monkii_squat_90", "sets": 3, "reps": 12, "repsMax": 15,
+              "note": "Use less help from the straps each week. Switch to Squat to 90° when it's easy." },
+            { "ex": "spanish_squat", "sets": 4, "seconds": 30, "secondsMax": 45 },
+            { "ex": "monkii_split_squat", "sets": 3, "reps": 10 },
+            { "ex": "step_up", "sets": 3, "reps": 10 },
+            { "ex": "monkii_hamstring_curl", "sets": 3, "reps": 10 },
+            { "ex": "single_leg_bridge", "sets": 3, "reps": 10, "restSec": 45 }
+          ]
+        }
+      },
+      "gate": [
+        { "id": "squat_90", "type": "check",
+          "text": "Bodyweight squat to 90°, 3×15, pain 2/10 or less" },
+        { "id": "step_down_control", "type": "check",
+          "text": "Step-down from 15–20 cm: 10 reps, knee stays over the toes",
+          "help": "Use a mirror or film from the front. The knee should not cave inward." },
+        { "id": "step_up_no_reaction", "type": "check",
+          "text": "Step-ups 3×10 with no reaction the next morning" },
+        { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 14,
+          "text": "14 days meeting the pain rules" }
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "Load & Control",
+      "goal": "Single-leg strength, slow controlled lowering, deeper bending added carefully.",
+      "minDays": 14,
+      "cautions": ["Still no twisting under load", "Add deeper bending gradually; stop at any pinch"],
+      "sessions": {
+        "daily": {
+          "name": "Mobility", "restSec": 15,
+          "items": [
+            { "ex": "heel_slide", "sets": 2, "reps": 15 },
+            { "ex": "single_leg_balance_eyes_closed", "sets": 3, "seconds": 20 },
+            { "ex": "side_plank", "sets": 2, "seconds": 30 },
+            { "ex": "brisk_walk", "sets": 1, "seconds": 900, "secondsMax": 1500, "optional": true }
+          ]
+        },
+        "strength": {
+          "name": "Strength", "restSec": 60,
+          "items": [
+            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 8, "repsMax": 10, "restSec": 75 },
+            { "ex": "forward_step_down", "sets": 3, "reps": 10 },
+            { "ex": "single_leg_box_squat", "sets": 3, "reps": 8 },
+            { "ex": "monkii_single_leg_curl", "sets": 3, "reps": 8 },
+            { "ex": "single_leg_rdl", "sets": 3, "reps": 10, "restSec": 45 },
+            { "ex": "deep_squat", "sets": 2, "reps": 10,
+              "note": "Only to a pain-free depth. Go a little deeper each week." }
+          ]
+        }
+      },
+      "gate": [
+        { "id": "sl_box_squat", "type": "check",
+          "text": "Single-leg squat to box: 10 reps each leg, looks the same on both sides" },
+        { "id": "slow_step_down", "type": "check",
+          "text": "Slow step-down from 20 cm: 10 reps, no pain, no knee caving" },
+        { "id": "eyes_closed_balance", "type": "number", "min": 20, "unit": "s",
+          "text": "Eyes-closed single-leg balance on the injured leg" },
+        { "id": "deep_squat_pain_free", "type": "check",
+          "text": "Deep bodyweight squat is pain-free" },
+        { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 14,
+          "text": "14 days meeting the pain rules" }
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "Dynamic & Return",
+      "goal": "Comfortable with impact, changing direction and pivoting.",
+      "minDays": 14,
+      "cautions": ["Stop at any catching, locking or giving way", "Land softly. Quiet landings mean good control"],
+      "sessions": {
+        "daily": {
+          "name": "Mobility", "restSec": 15,
+          "items": [
+            { "ex": "single_leg_balance_eyes_closed", "sets": 3, "seconds": 30 },
+            { "ex": "side_plank", "sets": 2, "seconds": 30 },
+            { "ex": "single_leg_calf_raise", "sets": 2, "reps": 15 },
+            { "ex": "brisk_walk", "sets": 1, "seconds": 1200, "secondsMax": 1800, "optional": true }
+          ]
+        },
+        "strength": {
+          "name": "Power", "restSec": 60,
+          "items": [
+            { "ex": "forward_hop_stick", "sets": 3, "reps": 6,
+              "note": "Start with Squat Jumps (the easier version) until landings are soft and quiet." },
+            { "ex": "lateral_hop", "sets": 3, "reps": 8 },
+            { "ex": "deceleration_drill", "sets": 3, "reps": 6 },
+            { "ex": "pivot_drill", "sets": 3, "reps": 8, "restSec": 45 },
+            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 8, "restSec": 75 },
+            { "ex": "forward_step_down", "sets": 3, "reps": 10 }
+          ]
+        }
+      },
+      "gate": [
+        { "id": "hop_symmetry", "type": "check",
+          "text": "Single-leg hop for distance: injured leg reaches at least 90% of the other",
+          "help": "Hop forward and hold the landing. Measure heel to heel and take the best of 3 on each leg." },
+        { "id": "pivot_confident", "type": "check",
+          "text": "Pivoting and cutting with no pain and no feeling the knee might give way" },
+        { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 14,
+          "text": "14 days meeting the pain rules" }
+      ]
+    }
+  ]
+}

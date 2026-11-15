@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- 8x8 grid, u=128px. Plus 5u wide, bars 1u; joint diameter phi*u; gap u/4. -->
+  <rect width="1024" height="1024" fill="#000"/>
+  <rect x="192" y="448" width="640" height="128" fill="#fff"/>
+  <rect x="448" y="192" width="128" height="640" fill="#fff"/>
+  <circle cx="512" cy="512" r="135.554" fill="#000"/>
+  <circle cx="512" cy="512" r="103.554" fill="#00E676"/>
+</svg>
