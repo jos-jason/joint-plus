@@ -64,6 +64,7 @@ assets/
 tool/
   make_illustrations.py   generates the exercise drawings
   make_icon.py            generates the app icon
+  make_protocol_page.py   builds the illustrated protocol page for clinical review
 ```
 
 ## Content
@@ -90,5 +91,19 @@ code:
 ```bash
 dart run build_runner build
 ```
+
+## Protocol page for clinicians
+
+`tool/make_protocol_page.py` builds one self-contained HTML page for clinical
+review. It covers every phase, session, dose, pain rule and moving-on check,
+with the drawings and a list of questions for the reviewer. It reads the same
+content files as the app, so after changing a program, rebuild it to keep the
+page in step:
+
+```bash
+python3 tool/make_protocol_page.py [output.html]
+```
+
+The default output is `build/joint-plus-knee-protocol.html`.
 
 See [PLAN.md](PLAN.md) for the full program design and milestones.
