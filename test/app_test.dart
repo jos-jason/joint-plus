@@ -10,6 +10,7 @@ import 'package:joint_plus/content/content_providers.dart';
 import 'package:joint_plus/content/models.dart';
 import 'package:joint_plus/data/data_providers.dart';
 import 'package:joint_plus/data/database.dart';
+import 'package:joint_plus/data/knees.dart';
 import 'package:joint_plus/reminders/reminder_providers.dart';
 import 'package:joint_plus/reminders/reminder_scheduler.dart';
 
@@ -97,7 +98,7 @@ void main() {
     await tester.tap(find.text('Shallow Wall Sit'));
     await tester.pumpAndSettle();
     expect(find.text('5 × 30–45 s'), findsOneWidget);
-    expect(find.text('Rest 60 s between sets'), findsOneWidget);
+    expect(find.text('Rest 120 s between sets'), findsOneWidget);
     expect(find.text('HOW TO'), findsOneWidget);
     expect(
       find.bySemanticsLabel('Drawing of Shallow Wall Sit'),
@@ -201,7 +202,8 @@ void main() {
     // +15 s stretches the rest; then it runs into the next set by itself.
     await tester.tap(find.text('+15 S'));
     await tester.pump();
-    await tester.pump(const Duration(seconds: 60));
+    // Wall-sit rests are 120 s (tendon-friendly isometrics), plus the 15.
+    await tester.pump(const Duration(seconds: 120));
     expect(find.text('REST'), findsOneWidget);
     await tester.pump(const Duration(seconds: 15));
     expect(find.text('SET 2 OF 5'), findsOneWidget);
@@ -287,13 +289,17 @@ void main() {
     await tester.tap(find.text('Morning check-in'));
     await tester.pumpAndSettle();
     expect(find.text('SAVE'), findsOneWidget);
-    await tester.tap(find.text('1'));
+    expect(find.textContaining('TENDON TEST'), findsOneWidget);
+    await tester.tap(find.text('1').first);
     await tester.tap(find.bySemanticsLabel('Swelling Less'));
     await tester.pump();
     expect(find.textContaining('Worse than yesterday'), findsNothing);
     await tester.tap(find.bySemanticsLabel('Stiffness More'));
     await tester.pump();
+    await scrollTo(tester, find.textContaining('Worse than yesterday'));
     expect(find.textContaining('Worse than yesterday'), findsOneWidget);
+    await tester.ensureVisible(find.bySemanticsLabel('Stiffness Same'));
+    await tester.pumpAndSettle();
     await tester.tap(find.bySemanticsLabel('Stiffness Same'));
     await tester.tap(find.text('SAVE'));
     await tester.pumpAndSettle();
@@ -307,7 +313,7 @@ void main() {
     // Reopening edits today's entry, starting from what was saved.
     await tester.tap(find.text('Morning check-in'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('4'));
+    await tester.tap(find.text('4').first);
     await tester.tap(find.text('SAVE'));
     await tester.pumpAndSettle();
     expect(
@@ -350,7 +356,9 @@ void main() {
       expect(find.text('START HERE'), findsOneWidget);
       await tester.tap(find.textContaining('entry check'));
       await tester.pumpAndSettle();
-      expect(find.text('ANSWER ALL 4'), findsOneWidget);
+      expect(find.text('ANSWER ALL 5'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Recovering knee Both'));
+      await tester.pump();
 
       for (var i = 0; i < 4; i++) {
         final yes = find.text('YES').at(i);
@@ -400,7 +408,9 @@ void main() {
 
       // The balance test is the last one missing: 24 s isn't enough, 32 s is.
       Future<void> measure(String seconds) async {
-        await tester.tap(find.text('Single-leg balance on the injured leg'));
+        await tester.tap(
+          find.text('Single-leg balance on each recovering leg'),
+        );
         await tester.pumpAndSettle();
         await tester.enterText(find.byType(TextField), seconds);
         await tester.pump();
@@ -551,5 +561,66 @@ void main() {
     await scrollTo(tester, find.text('Started at Phase 1'));
     expect(find.text('Moved up to Phase 2'), findsOneWidget);
     expect(find.text('Build Strength  ·  Tue 10 Nov'), findsOneWidget);
+  });
+
+  group('two knees', () {
+    Future<void> bothKnees(AppDatabase db) =>
+        saveKneeSetup(db, const KneeSetup.both(first: Knee.right));
+
+    testWidgets('check-in asks about each knee', (tester) async {
+      await pumpApp(tester, seed: bothKnees);
+
+      await tester.tap(find.text('Morning check-in'));
+      await tester.pumpAndSettle();
+      expect(find.text('Right knee'), findsOneWidget); // right goes first
+
+      Future<void> tap(String label) async {
+        final f = find.bySemanticsLabel(label);
+        await tester.scrollUntilVisible(
+          f,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(f);
+        await tester.pump();
+      }
+
+      for (final (knee, pain) in [('Right', 3), ('Left', 1)]) {
+        await tap('$knee knee pain $pain');
+        await tap('$knee knee Swelling Same');
+        await tap('$knee knee Stiffness Same');
+      }
+      await tester.tap(find.text('SAVE'));
+      await tester.pumpAndSettle();
+      expect(find.text('Left pain 1  ·  Right pain 3'), findsOneWidget);
+    });
+
+    testWidgets('recovering-leg exercises run on both legs', (tester) async {
+      await pumpApp(tester, seed: bothKnees);
+      await startSession(tester);
+
+      await tester.tap(find.text('SKIP')); // wall sit
+      await tester.pump(settle);
+      await tester.tap(find.text('START NOW')); // band knee extension
+      await tester.pump(settle);
+      expect(find.text('SET 1 OF 3  ·  RIGHT LEG'), findsOneWidget);
+      await tester.tap(find.text('DONE'));
+      await tester.pump(settle);
+      expect(find.text('SWITCH LEGS'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 8));
+      expect(find.text('SET 1 OF 3  ·  LEFT LEG'), findsOneWidget);
+    });
+
+    testWidgets('settings change which knees are in rehab', (tester) async {
+      await pumpApp(tester);
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Not set'), findsOneWidget);
+      await tester.tap(find.bySemanticsLabel('Recovering knee Both'));
+      await tester.pumpAndSettle();
+      expect(find.text('START EACH EXERCISE WITH'), findsOneWidget);
+      expect(find.textContaining('run on both'), findsOneWidget);
+    });
   });
 }

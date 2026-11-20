@@ -8,6 +8,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../app/router.dart';
 import '../../data/data_providers.dart';
 import '../../data/database.dart';
+import '../../data/knees.dart';
+import '../../widgets/knee_picker.dart';
 import '../../data/export.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/page_header.dart';
@@ -24,6 +26,7 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           children: [
             PageHeader(title: 'Settings', onBack: () => context.pop()),
+            const _KneesSection(),
             const RemindersSection(),
             const SizedBox(height: JSpace.lg),
             const Hairline(),
@@ -101,6 +104,45 @@ class _ExportRowState extends ConsumerState<_ExportRow> {
           ? 'Preparing…'
           : 'Sessions, check-ins and phase changes as JSON',
       onTap: _busy ? null : _export,
+    );
+  }
+}
+
+/// Which knees are in rehab. Changes the next session and check-in.
+class _KneesSection extends ConsumerWidget {
+  const _KneesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final setup = ref.watch(kneeSetupProvider).value;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        JSpace.gutter,
+        JSpace.lg,
+        JSpace.gutter,
+        0,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionLabel('Recovering knee'),
+          const SizedBox(height: JSpace.md),
+          KneePicker(
+            value: setup,
+            onChanged: (v) => saveKneeSetup(ref.read(databaseProvider), v),
+          ),
+          const SizedBox(height: JSpace.sm),
+          Text(
+            setup == null
+                ? 'Not set: one-leg exercises say "injured leg".'
+                : setup.both
+                ? 'Exercises for the recovering knee run on both, one after '
+                      'the other. The check-in asks about each knee.'
+                : 'One-leg exercises start on the ${setup.first.label.toLowerCase()} leg.',
+            style: JType.secondary,
+          ),
+        ],
+      ),
     );
   }
 }

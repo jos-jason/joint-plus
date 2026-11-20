@@ -4,6 +4,7 @@
 
 import '../content/models.dart';
 import '../data/database.dart';
+import '../data/knees.dart';
 
 // ------------------------------------------------------------- phase state
 
@@ -64,40 +65,67 @@ class RuleDay {
 /// Judges each check-in morning against the pain rules:
 /// - no session the day before went above [PainRules.maxDuring],
 /// - swelling and stiffness are not worse than the morning before,
-/// - pain is no higher than the previous check-in (when [PainRules.morningNoWorse]).
+/// - pain is no higher than the previous check-in (when [PainRules.morningNoWorse]),
+/// - the load test, if the program has one, rose by no more than its limit.
 ///
-/// Days without a check-in are skipped: they neither count nor break a streak.
+/// With two knees each is checked against its own previous morning, and a
+/// morning only meets the rules if every knee does. Days without a check-in
+/// are skipped: they neither count nor break a streak.
 List<RuleDay> evaluateRuleDays({
   required List<CheckIn> checkIns,
   required List<SessionLog> sessions,
   required PainRules rules,
 }) {
-  final sorted = [...checkIns]..sort((a, b) => a.day.compareTo(b.day));
   final worstByDay = <String, int>{};
   for (final s in sessions) {
     final d = dayKey(s.startedAt);
     final prev = worstByDay[d];
     if (prev == null || s.painAfter > prev) worstByDay[d] = s.painAfter;
   }
+  final byDay = <String, List<CheckIn>>{};
+  for (final c in checkIns) {
+    (byDay[c.day] ??= []).add(c);
+  }
+  final days = byDay.keys.toList()..sort();
 
   final out = <RuleDay>[];
-  CheckIn? previous;
-  for (final c in sorted) {
+  final previous = <String, CheckIn>{};
+  final load = rules.loadTest;
+  for (final day in days) {
     final reasons = <String>[];
-    final worst = worstByDay[dayKey(_dayBefore(c.day))];
+    final worst = worstByDay[dayKey(_dayBefore(day))];
     if (worst != null && worst > rules.maxDuring) {
       reasons.add('Pain reached $worst/10 in yesterday\'s session');
     }
-    if (c.swelling == Change.more) reasons.add('More swelling this morning');
-    if (c.stiffness == Change.more) reasons.add('More stiffness this morning');
-    if (rules.morningNoWorse && previous != null && c.pain > previous.pain) {
-      reasons.add('Morning pain up from ${previous.pain} to ${c.pain}');
+    final rows = byDay[day]!..sort((a, b) => a.knee.compareTo(b.knee));
+    for (final c in rows) {
+      final who = c.knee == singleKneeKey ? '' : '${checkInKeyLabel(c.knee)}: ';
+      final before = previous[c.knee];
+      if (c.swelling == Change.more)
+        reasons.add('${who}more swelling this morning');
+      if (c.stiffness == Change.more)
+        reasons.add('${who}more stiffness this morning');
+      if (rules.morningNoWorse && before != null && c.pain > before.pain) {
+        reasons.add('${who}morning pain up from ${before.pain} to ${c.pain}');
+      }
+      final was = before?.loadPain, now = c.loadPain;
+      if (load != null &&
+          was != null &&
+          now != null &&
+          now - was > load.maxRise) {
+        reasons.add('$who${load.name.toLowerCase()} up from $was to $now');
+      }
+      previous[c.knee] = c;
     }
-    out.add(RuleDay(day: c.day, reasons: reasons));
-    previous = c;
+    out.add(
+      RuleDay(day: day, reasons: [for (final r in reasons) _capitalise(r)]),
+    );
   }
   return out;
 }
+
+String _capitalise(String s) =>
+    s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
 DateTime _dayBefore(String day) {
   final d = DateTime.parse(day);

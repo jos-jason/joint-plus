@@ -65,7 +65,8 @@ void main() {
           lib.exercises,
         );
         expect(daily, inInclusiveRange(4, 15), reason: '${ph.id} daily');
-        expect(strength, inInclusiveRange(20, 38), reason: '${ph.id} strength');
+        // Slow 3 s down / 3 s up reps for the tendon make these ~40 min.
+        expect(strength, inInclusiveRange(20, 42), reason: '${ph.id} strength');
       }
     });
 

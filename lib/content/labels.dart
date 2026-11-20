@@ -18,7 +18,7 @@ extension SidesLabel on Sides {
   String get label => switch (this) {
     Sides.together => 'Both legs',
     Sides.each => 'Each leg',
-    Sides.affected => 'Injured leg',
+    Sides.affected => 'Recovering leg',
   };
 }
 

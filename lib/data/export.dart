@@ -53,9 +53,11 @@ Future<Map<String, Object?>> buildExport(
       )..orderBy([(c) => OrderingTerm.asc(c.day)])).get())
         {
           'day': c.day,
+          'knee': c.knee,
           'pain': c.pain,
           'swelling': c.swelling.name,
           'stiffness': c.stiffness.name,
+          'loadTestPain': ?c.loadPain,
         },
     ],
     'phaseChanges': [

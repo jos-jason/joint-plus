@@ -94,14 +94,33 @@ void main() {
       stiffness: Change.less,
     );
 
-    final today = await db.watchCheckIn('2026-11-14').first;
-    expect(today!.pain, 2);
+    final today = (await db.watchCheckIn('2026-11-14').first).single;
+    expect(today.pain, 2);
     expect(today.swelling, Change.less);
     expect((await db.watchCheckIns().first).map((c) => c.day), [
       '2026-11-14',
       '2026-11-15',
     ]);
-    expect(await db.watchCheckIn('2026-11-13').first, isNull);
+    expect(await db.watchCheckIn('2026-11-13').first, isEmpty);
+  });
+
+  test('with two knees each gets its own check-in row', () async {
+    final at = DateTime(2026, 11, 14, 7);
+    for (final (knee, pain) in [('left', 2), ('right', 4)]) {
+      await db.saveCheckIn(
+        at: at,
+        knee: knee,
+        pain: pain,
+        swelling: Change.same,
+        stiffness: Change.same,
+        loadPain: pain + 1,
+      );
+    }
+    final rows = await db.watchCheckIn('2026-11-14').first;
+    expect(
+      [for (final r in rows) (r.knee, r.pain, r.loadPain)],
+      [('left', 2, 3), ('right', 4, 5)],
+    );
   });
 
   test('dayKey pads to yyyy-mm-dd', () {

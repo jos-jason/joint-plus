@@ -25,6 +25,7 @@ void main() {
       checkIns: [
         CheckIn(
           day: '2026-11-13',
+          knee: 'knee',
           pain: 2,
           swelling: Change.same,
           stiffness: Change.same,
@@ -104,7 +105,13 @@ void main() {
       },
     ]);
     expect(round['checkIns'], [
-      {'day': '2026-11-15', 'pain': 1, 'swelling': 'less', 'stiffness': 'same'},
+      {
+        'day': '2026-11-15',
+        'knee': 'knee',
+        'pain': 1,
+        'swelling': 'less',
+        'stiffness': 'same',
+      },
     ]);
     expect(
       (round['phaseChanges']! as List).single,

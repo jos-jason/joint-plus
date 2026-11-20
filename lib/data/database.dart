@@ -34,17 +34,24 @@ class SessionItemLogs extends Table {
   BoolColumn get optional => boolean()();
 }
 
-/// Morning check-in. One per calendar day; saving again replaces it.
+/// Morning check-in. One per knee per calendar day; saving again replaces it.
 class CheckIns extends Table {
   /// Local date, `yyyy-mm-dd`.
   TextColumn get day => text()();
+
+  /// "left" or "right" when both knees are in rehab, else "knee".
+  TextColumn get knee => text().withDefault(const Constant('knee'))();
   IntColumn get pain => integer()();
   TextColumn get swelling => textEnum<Change>()();
   TextColumn get stiffness => textEnum<Change>()();
+
+  /// Pain 0–10 on the program's morning load test (e.g. a single-leg
+  /// squat for the patellar tendon). Null when not asked or skipped.
+  IntColumn get loadPain => integer().nullable()();
   DateTimeColumn get recordedAt => dateTime()();
 
   @override
-  Set<Column> get primaryKey => {day};
+  Set<Column> get primaryKey => {day, knee};
 }
 
 /// Why the current phase changed.
@@ -131,7 +138,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'joint_plus'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -141,6 +148,16 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(gateResults);
       }
       if (from < 3) await m.createTable(appSettings);
+      if (from < 4) {
+        // Rebuilds the table with the new key (day, knee); existing rows
+        // become the single-knee "knee" row for their day.
+        await m.alterTable(
+          TableMigration(
+            checkIns,
+            newColumns: [checkIns.knee, checkIns.loadPain],
+          ),
+        );
+      }
     },
     beforeOpen: (details) => customStatement('PRAGMA foreign_keys = ON'),
   );
@@ -210,25 +227,37 @@ class AppDatabase extends _$AppDatabase {
 
   Future<void> saveCheckIn({
     required DateTime at,
+    String knee = 'knee',
     required int pain,
     required Change swelling,
     required Change stiffness,
+    int? loadPain,
   }) => into(checkIns).insertOnConflictUpdate(
     CheckInsCompanion.insert(
       day: dayKey(at),
+      knee: Value(knee),
       pain: pain,
       swelling: swelling,
       stiffness: stiffness,
+      loadPain: Value(loadPain),
       recordedAt: at,
     ),
   );
 
-  Stream<CheckIn?> watchCheckIn(String day) =>
-      (select(checkIns)..where((c) => c.day.equals(day))).watchSingleOrNull();
+  /// Every knee's check-in for one day.
+  Stream<List<CheckIn>> watchCheckIn(String day) =>
+      (select(checkIns)
+            ..where((c) => c.day.equals(day))
+            ..orderBy([(c) => OrderingTerm.asc(c.knee)]))
+          .watch();
 
   /// Oldest first.
   Stream<List<CheckIn>> watchCheckIns() =>
-      (select(checkIns)..orderBy([(c) => OrderingTerm.asc(c.day)])).watch();
+      (select(checkIns)..orderBy([
+            (c) => OrderingTerm.asc(c.day),
+            (c) => OrderingTerm.asc(c.knee),
+          ]))
+          .watch();
 
   // ------------------------------------------------------------ progression
 

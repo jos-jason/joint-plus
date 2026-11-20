@@ -557,7 +557,7 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
         and a Pocket Monkii suspension trainer (straps from a door anchor) used to unload squats and split squats early on.</p>
         <h3 style="margin-top:12px">Each session in the app</h3>
         <p class="muted" style="font-size:.95rem">Pain is rated 0–10 before starting and as the worst pain after finishing. The player guides one set at a time,
-        injured leg first. It runs hands-free: each exercise opens with a 20 s "up next" preview, every set starts with a 3-2-1,
+        recovering knee first (with both knees in rehab, the more sensitive one first). It runs hands-free: each exercise opens with a 20 s "up next" preview, every set starts with a 3-2-1,
         reps are counted at a set pace for each exercise (shown as "1 rep / N s"), holds and rests are timed, and one-leg sets get an 8 s pause to switch legs.
         Any timer can be paused, extended by 15 s or cut short. Cue on every rep set: <em>the last 2–3 reps should feel hard; pain up to {pr['maxDuring']}/10 is fine.</em></p>
       </div>
@@ -580,7 +580,7 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
       <div class="rule"><span class="label">Afterwards</span><span class="big">{pr['settleHours']} h</span>
         <p>Any pain from exercise settles back to baseline within {pr['settleHours']} hours.</p></div>
       <div class="rule"><span class="label">Next morning</span><span class="big">No worse</span>
-        <p>Morning pain no higher than the previous check-in, and swelling and stiffness not "more" than the day before.</p></div>
+        <p>Morning pain no higher than the previous check-in, swelling and stiffness not "more" than the day before, and the tendon test up by no more than {pr['loadTest']['maxRise']} point.</p></div>
     </div>
 
     <div class="split2" style="margin-top:24px">
@@ -619,7 +619,9 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
           <li>Swelling is not "more" than yesterday.</li>
           <li>Stiffness is not "more" than yesterday.</li>
           <li>Morning pain is no higher than at the previous check-in.</li>
+          <li>The tendon test rose by no more than {pr['loadTest']['maxRise']} point. {E(pr['loadTest']['instructions'])}</li>
         </ol>
+        <p class="muted" style="margin-top:8px">With both knees in rehab, each knee answers the check-in separately and is compared with its own previous morning. A morning meets the rules only if every knee does.</p>
         <p class="muted" style="margin-top:8px">A day with no check-in is skipped: it neither counts nor breaks the run.</p></div>
       {ARROW_DOWN}
       <div class="frow three">
@@ -643,6 +645,8 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
       <div><strong>Entry check.</strong> At the start, the Phase 1 checks are asked as yes/no questions, plus "the knee has settled after activity this past week, with no increase in swelling". All yes suggests Phase 2; anything else suggests Phase 1. The patient can choose either.</div>
       <div><strong>Checks reset every phase.</strong> Self-test answers and good-day counts only count from the day a phase began, including after a drop-back, so each phase is earned again.</div>
       <div><strong>Stale advice is ignored.</strong> Flare-up advice only looks at the latest check-in when it is from today or yesterday.</div>
+      <div><strong>Two knees.</strong> The patient can set left, right or both knees in rehab. With both, exercises meant for the recovering knee run on each knee in turn (the more sensitive knee first), and one-leg checks must be passed on each.</div>
+      <div><strong>Patellar tendon.</strong> Isometric holds get 2 minutes' rest and a "strong but tolerable" effort cue; squat-pattern strength work uses a slow 3 s down, 3 s up tempo; Phase 3 adds a tendon-test check before impact work.</div>
       <div><strong>Easier and harder versions.</strong> Every exercise links to an easier and a harder version. Swaps are the patient's choice; the app never progresses an exercise automatically.</div>
     </div>
   </div>
@@ -664,6 +668,8 @@ PAGE = f"""<title>Joint+ Knee Protocol</title>
     <div class="sec-head"><span class="label acc">For you</span><h2>Questions for the reviewing clinician</h2>
       <p class="col muted">These are the decisions in the protocol that most need a professional opinion. Notes against a phase or an exercise name are easiest to act on.</p></div>
     <div class="qs">
+      <div class="q"><div><h4>Patellar tendon pain: what should change?</h4><p>The patient has felt pain at the patellar tendon during the shallow wall sit and has had patellar tendon pain before. The protocol now uses tendon-style isometrics (2 min rest), slow-tempo squat patterns, a daily single-leg decline-squat pain test, and a tendon check before Phase 4. Is that the right approach, and are the doses and limits right?</p></div></div>
+      <div class="q"><div><h4>Both knees are injured: which fixed targets replace the side-to-side comparisons?</h4><p>Limb symmetry (hop distance ≥ 90% of the other leg, "same as the other side") doesn't work with two injured knees. What absolute targets should the gates use for each knee?</p></div></div>
       <div class="q"><div><h4>Is {pr['maxDuring']}/10 the right pain ceiling during exercise for this knee?</h4><p>It is also the threshold that breaks the next morning's pain rules.</p></div></div>
       <div class="q"><div><h4>Is the morning rule too strict?</h4><p>Any rise in morning pain, even 1 point, from the previous check-in breaks the day and resets the run of good days.</p></div></div>
       <div class="q"><div><h4>Are the minimum phase lengths sensible?</h4><p>{', '.join(f"Phase {i + 1}: {ph['minDays']} days" for i, ph in enumerate(phases))}. They are floors; the checks usually take longer.</p></div></div>

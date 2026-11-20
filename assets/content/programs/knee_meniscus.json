@@ -5,7 +5,14 @@
   "shortName": "Knee",
   "description": "Four phases that strengthen the muscles around the knee after inflammation and a meniscus strain. You move to the next phase when you pass its checks, not after a set time.",
   "strengthDaysPerWeek": 3,
-  "painRules": { "maxDuring": 3, "settleHours": 24, "morningNoWorse": true },
+  "painRules": {
+    "maxDuring": 3, "settleHours": 24, "morningNoWorse": true,
+    "loadTest": {
+      "name": "Tendon test",
+      "instructions": "Stand on one leg on a step or slope, heel higher than toes if you can. Squat slowly to about 45° and back up. Rate the pain at the front of the knee, just below the kneecap.",
+      "maxRise": 1
+    }
+  },
   "redFlags": [
     "The knee locks or catches and won't fully straighten",
     "The knee gives way",
@@ -34,23 +41,25 @@
         "strength": {
           "name": "Strength", "restSec": 60,
           "items": [
-            { "ex": "wall_sit_shallow", "sets": 5, "seconds": 30, "secondsMax": 45 },
+            { "ex": "wall_sit_shallow", "sets": 5, "seconds": 30, "secondsMax": 45, "restSec": 120,
+              "note": "A strong but tolerable effort. If the tendon below the kneecap hurts, try a slightly different depth; keep it at 3/10 or less." },
             { "ex": "tke_band", "sets": 3, "reps": 15, "restSec": 45 },
             { "ex": "glute_bridge", "sets": 3, "reps": 12, "restSec": 45 },
             { "ex": "clamshell_band", "sets": 3, "reps": 15, "restSec": 30 },
-            { "ex": "monkii_partial_squat", "sets": 3, "reps": 12 },
+            { "ex": "monkii_partial_squat", "sets": 3, "reps": 10, "note": "Slow: 3 s down, 3 s up." },
             { "ex": "single_leg_balance", "sets": 3, "seconds": 30, "restSec": 15 }
           ]
         }
       },
       "gate": [
         { "id": "full_extension", "type": "check",
-          "text": "Your knee straightens fully, the same as the other side",
-          "help": "Sit with both legs out straight. The backs of both knees should flatten to the floor equally." },
+          "text": "Each recovering knee straightens fully",
+          "help": "Sit with your legs out straight. The back of the knee should flatten to the floor with no gap. With one knee recovering, it should match the other." },
         { "id": "slr_no_lag", "type": "check",
           "text": "3×15 straight leg raises with no knee bend" },
         { "id": "balance_30", "type": "number", "min": 30, "unit": "s",
-          "text": "Single-leg balance on the injured leg" },
+          "text": "Single-leg balance on each recovering leg",
+          "help": "Enter the shorter time if both knees are recovering." },
         { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 7,
           "text": "7 days meeting the pain rules, with no increase in swelling" }
       ]
@@ -76,11 +85,12 @@
         "strength": {
           "name": "Strength", "restSec": 60,
           "items": [
-            { "ex": "monkii_squat_90", "sets": 3, "reps": 12, "repsMax": 15,
-              "note": "Use less help from the straps each week. Switch to Squat to 90° when it's easy." },
-            { "ex": "spanish_squat", "sets": 4, "seconds": 30, "secondsMax": 45 },
-            { "ex": "monkii_split_squat", "sets": 3, "reps": 10 },
-            { "ex": "step_up", "sets": 3, "reps": 10 },
+            { "ex": "monkii_squat_90", "sets": 3, "reps": 8, "repsMax": 12,
+              "note": "Slow: 3 s down, 3 s up. Use less help from the straps each week. Switch to Squat to 90° when it's easy." },
+            { "ex": "spanish_squat", "sets": 4, "seconds": 30, "secondsMax": 45, "restSec": 120,
+              "note": "A strong but tolerable effort. If the tendon below the kneecap hurts, try a slightly different depth; keep it at 3/10 or less." },
+            { "ex": "monkii_split_squat", "sets": 3, "reps": 8, "note": "Slow: 3 s down, 3 s up." },
+            { "ex": "step_up", "sets": 3, "reps": 8, "note": "Slow: 3 s down, 3 s up." },
             { "ex": "monkii_hamstring_curl", "sets": 3, "reps": 10 },
             { "ex": "single_leg_bridge", "sets": 3, "reps": 10, "restSec": 45 }
           ]
@@ -117,9 +127,10 @@
         "strength": {
           "name": "Strength", "restSec": 60,
           "items": [
-            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 8, "repsMax": 10, "restSec": 75 },
-            { "ex": "forward_step_down", "sets": 3, "reps": 10 },
-            { "ex": "single_leg_box_squat", "sets": 3, "reps": 8 },
+            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 6, "repsMax": 8, "restSec": 90,
+              "note": "Slow: 3 s down, 3 s up." },
+            { "ex": "forward_step_down", "sets": 3, "reps": 8, "note": "Slow: 3 s down, 3 s up." },
+            { "ex": "single_leg_box_squat", "sets": 3, "reps": 6, "note": "Slow: 3 s down, 3 s up." },
             { "ex": "monkii_single_leg_curl", "sets": 3, "reps": 8 },
             { "ex": "single_leg_rdl", "sets": 3, "reps": 10, "restSec": 45 },
             { "ex": "deep_squat", "sets": 2, "reps": 10,
@@ -129,11 +140,16 @@
       },
       "gate": [
         { "id": "sl_box_squat", "type": "check",
-          "text": "Single-leg squat to box: 10 reps each leg, looks the same on both sides" },
+          "text": "Single-leg squat to box: 10 controlled reps on each leg, knee over the toes",
+          "help": "With one knee recovering, both sides should look the same." },
         { "id": "slow_step_down", "type": "check",
           "text": "Slow step-down from 20 cm: 10 reps, no pain, no knee caving" },
         { "id": "eyes_closed_balance", "type": "number", "min": 20, "unit": "s",
-          "text": "Eyes-closed single-leg balance on the injured leg" },
+          "text": "Eyes-closed single-leg balance on each recovering leg",
+          "help": "Enter the shorter time if both knees are recovering." },
+        { "id": "tendon_test_ok", "type": "check",
+          "text": "Tendon test at 2/10 or less on each recovering knee, 3 mornings running",
+          "help": "The single-leg squat on a step or slope from the morning check-in." },
         { "id": "deep_squat_pain_free", "type": "check",
           "text": "Deep bodyweight squat is pain-free" },
         { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 14,
@@ -145,7 +161,7 @@
       "name": "Dynamic & Return",
       "goal": "Comfortable with impact, changing direction and pivoting.",
       "minDays": 14,
-      "cautions": ["Stop at any catching, locking or giving way", "Land softly. Quiet landings mean good control"],
+      "cautions": ["Stop at any catching, locking or giving way", "Land softly. Quiet landings mean good control", "Hops and landings no more than every other day"],
       "sessions": {
         "daily": {
           "name": "Mobility", "restSec": 15,
@@ -164,15 +180,16 @@
             { "ex": "lateral_hop", "sets": 3, "reps": 8 },
             { "ex": "deceleration_drill", "sets": 3, "reps": 6 },
             { "ex": "pivot_drill", "sets": 3, "reps": 8, "restSec": 45 },
-            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 8, "restSec": 75 },
-            { "ex": "forward_step_down", "sets": 3, "reps": 10 }
+            { "ex": "bulgarian_split_squat", "sets": 3, "reps": 6, "repsMax": 8, "restSec": 90,
+              "note": "Slow: 3 s down, 3 s up." },
+            { "ex": "forward_step_down", "sets": 3, "reps": 8, "note": "Slow: 3 s down, 3 s up." }
           ]
         }
       },
       "gate": [
         { "id": "hop_symmetry", "type": "check",
-          "text": "Single-leg hop for distance: injured leg reaches at least 90% of the other",
-          "help": "Hop forward and hold the landing. Measure heel to heel and take the best of 3 on each leg." },
+          "text": "Single-leg hop for distance: each recovering leg reaches its target",
+          "help": "One knee recovering: at least 90% of the other leg's distance. Both knees: comparing legs doesn't work, so use a distance your clinician sets. Hop and hold the landing; best of 3, heel to heel." },
         { "id": "pivot_confident", "type": "check",
           "text": "Pivoting and cutting with no pain and no feeling the knee might give way" },
         { "id": "pain_rule_days", "type": "auto", "metric": "painRuleDays", "min": 14,

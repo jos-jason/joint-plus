@@ -10,6 +10,7 @@ import '../../widgets/stark_dialog.dart';
 import '../../content/labels.dart';
 import '../../content/models.dart';
 import '../../data/data_providers.dart';
+import '../../data/knees.dart';
 import '../checkin/checkin_screen.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/async_content.dart';
@@ -260,14 +261,21 @@ class _CheckInRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final c = ref.watch(todayCheckInProvider).value;
+    final rows = ref.watch(todayCheckInProvider).value ?? const [];
+    final done = rows.isNotEmpty;
     return StarkRow(
       title: 'Morning check-in',
-      subtitle: c == null
+      subtitle: !done
           ? 'Pain, swelling, stiffness — 3 taps'
-          : 'Pain ${c.pain}  ·  swelling ${c.swelling.label.toLowerCase()}'
-                '  ·  stiffness ${c.stiffness.label.toLowerCase()}',
-      trailing: c == null
+          : rows.length == 1
+          ? 'Pain ${rows.single.pain}'
+                '  ·  swelling ${rows.single.swelling.label.toLowerCase()}'
+                '  ·  stiffness ${rows.single.stiffness.label.toLowerCase()}'
+          : [
+              for (final c in rows)
+                '${checkInKeyLabel(c.knee).split(' ').first} pain ${c.pain}',
+            ].join('  ·  '),
+      trailing: !done
           ? null
           : const Icon(Icons.check, size: 20, color: JColors.green),
       onTap: () => context.push(Routes.checkIn),

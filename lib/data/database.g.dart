@@ -941,6 +941,16 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _kneeMeta = const VerificationMeta('knee');
+  @override
+  late final GeneratedColumn<String> knee = GeneratedColumn<String>(
+    'knee',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('knee'),
+  );
   static const VerificationMeta _painMeta = const VerificationMeta('pain');
   @override
   late final GeneratedColumn<int> pain = GeneratedColumn<int>(
@@ -968,6 +978,17 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
         type: DriftSqlType.string,
         requiredDuringInsert: true,
       ).withConverter<Change>($CheckInsTable.$converterstiffness);
+  static const VerificationMeta _loadPainMeta = const VerificationMeta(
+    'loadPain',
+  );
+  @override
+  late final GeneratedColumn<int> loadPain = GeneratedColumn<int>(
+    'load_pain',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _recordedAtMeta = const VerificationMeta(
     'recordedAt',
   );
@@ -982,9 +1003,11 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
   @override
   List<GeneratedColumn> get $columns => [
     day,
+    knee,
     pain,
     swelling,
     stiffness,
+    loadPain,
     recordedAt,
   ];
   @override
@@ -1007,6 +1030,12 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
     } else if (isInserting) {
       context.missing(_dayMeta);
     }
+    if (data.containsKey('knee')) {
+      context.handle(
+        _kneeMeta,
+        knee.isAcceptableOrUnknown(data['knee']!, _kneeMeta),
+      );
+    }
     if (data.containsKey('pain')) {
       context.handle(
         _painMeta,
@@ -1014,6 +1043,12 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
       );
     } else if (isInserting) {
       context.missing(_painMeta);
+    }
+    if (data.containsKey('load_pain')) {
+      context.handle(
+        _loadPainMeta,
+        loadPain.isAcceptableOrUnknown(data['load_pain']!, _loadPainMeta),
+      );
     }
     if (data.containsKey('recorded_at')) {
       context.handle(
@@ -1027,7 +1062,7 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {day};
+  Set<GeneratedColumn> get $primaryKey => {day, knee};
   @override
   CheckIn map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -1035,6 +1070,10 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
       day: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}day'],
+      )!,
+      knee: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}knee'],
       )!,
       pain: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1051,6 +1090,10 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
           DriftSqlType.string,
           data['${effectivePrefix}stiffness'],
         )!,
+      ),
+      loadPain: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}load_pain'],
       ),
       recordedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1073,21 +1116,31 @@ class $CheckInsTable extends CheckIns with TableInfo<$CheckInsTable, CheckIn> {
 class CheckIn extends DataClass implements Insertable<CheckIn> {
   /// Local date, `yyyy-mm-dd`.
   final String day;
+
+  /// "left" or "right" when both knees are in rehab, else "knee".
+  final String knee;
   final int pain;
   final Change swelling;
   final Change stiffness;
+
+  /// Pain 0–10 on the program's morning load test (e.g. a single-leg
+  /// squat for the patellar tendon). Null when not asked or skipped.
+  final int? loadPain;
   final DateTime recordedAt;
   const CheckIn({
     required this.day,
+    required this.knee,
     required this.pain,
     required this.swelling,
     required this.stiffness,
+    this.loadPain,
     required this.recordedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['day'] = Variable<String>(day);
+    map['knee'] = Variable<String>(knee);
     map['pain'] = Variable<int>(pain);
     {
       map['swelling'] = Variable<String>(
@@ -1099,6 +1152,9 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
         $CheckInsTable.$converterstiffness.toSql(stiffness),
       );
     }
+    if (!nullToAbsent || loadPain != null) {
+      map['load_pain'] = Variable<int>(loadPain);
+    }
     map['recorded_at'] = Variable<DateTime>(recordedAt);
     return map;
   }
@@ -1106,9 +1162,13 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
   CheckInsCompanion toCompanion(bool nullToAbsent) {
     return CheckInsCompanion(
       day: Value(day),
+      knee: Value(knee),
       pain: Value(pain),
       swelling: Value(swelling),
       stiffness: Value(stiffness),
+      loadPain: loadPain == null && nullToAbsent
+          ? const Value.absent()
+          : Value(loadPain),
       recordedAt: Value(recordedAt),
     );
   }
@@ -1120,6 +1180,7 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return CheckIn(
       day: serializer.fromJson<String>(json['day']),
+      knee: serializer.fromJson<String>(json['knee']),
       pain: serializer.fromJson<int>(json['pain']),
       swelling: $CheckInsTable.$converterswelling.fromJson(
         serializer.fromJson<String>(json['swelling']),
@@ -1127,6 +1188,7 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
       stiffness: $CheckInsTable.$converterstiffness.fromJson(
         serializer.fromJson<String>(json['stiffness']),
       ),
+      loadPain: serializer.fromJson<int?>(json['loadPain']),
       recordedAt: serializer.fromJson<DateTime>(json['recordedAt']),
     );
   }
@@ -1135,6 +1197,7 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'day': serializer.toJson<String>(day),
+      'knee': serializer.toJson<String>(knee),
       'pain': serializer.toJson<int>(pain),
       'swelling': serializer.toJson<String>(
         $CheckInsTable.$converterswelling.toJson(swelling),
@@ -1142,29 +1205,36 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
       'stiffness': serializer.toJson<String>(
         $CheckInsTable.$converterstiffness.toJson(stiffness),
       ),
+      'loadPain': serializer.toJson<int?>(loadPain),
       'recordedAt': serializer.toJson<DateTime>(recordedAt),
     };
   }
 
   CheckIn copyWith({
     String? day,
+    String? knee,
     int? pain,
     Change? swelling,
     Change? stiffness,
+    Value<int?> loadPain = const Value.absent(),
     DateTime? recordedAt,
   }) => CheckIn(
     day: day ?? this.day,
+    knee: knee ?? this.knee,
     pain: pain ?? this.pain,
     swelling: swelling ?? this.swelling,
     stiffness: stiffness ?? this.stiffness,
+    loadPain: loadPain.present ? loadPain.value : this.loadPain,
     recordedAt: recordedAt ?? this.recordedAt,
   );
   CheckIn copyWithCompanion(CheckInsCompanion data) {
     return CheckIn(
       day: data.day.present ? data.day.value : this.day,
+      knee: data.knee.present ? data.knee.value : this.knee,
       pain: data.pain.present ? data.pain.value : this.pain,
       swelling: data.swelling.present ? data.swelling.value : this.swelling,
       stiffness: data.stiffness.present ? data.stiffness.value : this.stiffness,
+      loadPain: data.loadPain.present ? data.loadPain.value : this.loadPain,
       recordedAt: data.recordedAt.present
           ? data.recordedAt.value
           : this.recordedAt,
@@ -1175,47 +1245,58 @@ class CheckIn extends DataClass implements Insertable<CheckIn> {
   String toString() {
     return (StringBuffer('CheckIn(')
           ..write('day: $day, ')
+          ..write('knee: $knee, ')
           ..write('pain: $pain, ')
           ..write('swelling: $swelling, ')
           ..write('stiffness: $stiffness, ')
+          ..write('loadPain: $loadPain, ')
           ..write('recordedAt: $recordedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(day, pain, swelling, stiffness, recordedAt);
+  int get hashCode =>
+      Object.hash(day, knee, pain, swelling, stiffness, loadPain, recordedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CheckIn &&
           other.day == this.day &&
+          other.knee == this.knee &&
           other.pain == this.pain &&
           other.swelling == this.swelling &&
           other.stiffness == this.stiffness &&
+          other.loadPain == this.loadPain &&
           other.recordedAt == this.recordedAt);
 }
 
 class CheckInsCompanion extends UpdateCompanion<CheckIn> {
   final Value<String> day;
+  final Value<String> knee;
   final Value<int> pain;
   final Value<Change> swelling;
   final Value<Change> stiffness;
+  final Value<int?> loadPain;
   final Value<DateTime> recordedAt;
   final Value<int> rowid;
   const CheckInsCompanion({
     this.day = const Value.absent(),
+    this.knee = const Value.absent(),
     this.pain = const Value.absent(),
     this.swelling = const Value.absent(),
     this.stiffness = const Value.absent(),
+    this.loadPain = const Value.absent(),
     this.recordedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   CheckInsCompanion.insert({
     required String day,
+    this.knee = const Value.absent(),
     required int pain,
     required Change swelling,
     required Change stiffness,
+    this.loadPain = const Value.absent(),
     required DateTime recordedAt,
     this.rowid = const Value.absent(),
   }) : day = Value(day),
@@ -1225,17 +1306,21 @@ class CheckInsCompanion extends UpdateCompanion<CheckIn> {
        recordedAt = Value(recordedAt);
   static Insertable<CheckIn> custom({
     Expression<String>? day,
+    Expression<String>? knee,
     Expression<int>? pain,
     Expression<String>? swelling,
     Expression<String>? stiffness,
+    Expression<int>? loadPain,
     Expression<DateTime>? recordedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (day != null) 'day': day,
+      if (knee != null) 'knee': knee,
       if (pain != null) 'pain': pain,
       if (swelling != null) 'swelling': swelling,
       if (stiffness != null) 'stiffness': stiffness,
+      if (loadPain != null) 'load_pain': loadPain,
       if (recordedAt != null) 'recorded_at': recordedAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1243,17 +1328,21 @@ class CheckInsCompanion extends UpdateCompanion<CheckIn> {
 
   CheckInsCompanion copyWith({
     Value<String>? day,
+    Value<String>? knee,
     Value<int>? pain,
     Value<Change>? swelling,
     Value<Change>? stiffness,
+    Value<int?>? loadPain,
     Value<DateTime>? recordedAt,
     Value<int>? rowid,
   }) {
     return CheckInsCompanion(
       day: day ?? this.day,
+      knee: knee ?? this.knee,
       pain: pain ?? this.pain,
       swelling: swelling ?? this.swelling,
       stiffness: stiffness ?? this.stiffness,
+      loadPain: loadPain ?? this.loadPain,
       recordedAt: recordedAt ?? this.recordedAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1264,6 +1353,9 @@ class CheckInsCompanion extends UpdateCompanion<CheckIn> {
     final map = <String, Expression>{};
     if (day.present) {
       map['day'] = Variable<String>(day.value);
+    }
+    if (knee.present) {
+      map['knee'] = Variable<String>(knee.value);
     }
     if (pain.present) {
       map['pain'] = Variable<int>(pain.value);
@@ -1278,6 +1370,9 @@ class CheckInsCompanion extends UpdateCompanion<CheckIn> {
         $CheckInsTable.$converterstiffness.toSql(stiffness.value),
       );
     }
+    if (loadPain.present) {
+      map['load_pain'] = Variable<int>(loadPain.value);
+    }
     if (recordedAt.present) {
       map['recorded_at'] = Variable<DateTime>(recordedAt.value);
     }
@@ -1291,9 +1386,11 @@ class CheckInsCompanion extends UpdateCompanion<CheckIn> {
   String toString() {
     return (StringBuffer('CheckInsCompanion(')
           ..write('day: $day, ')
+          ..write('knee: $knee, ')
           ..write('pain: $pain, ')
           ..write('swelling: $swelling, ')
           ..write('stiffness: $stiffness, ')
+          ..write('loadPain: $loadPain, ')
           ..write('recordedAt: $recordedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3042,17 +3139,21 @@ typedef $$SessionItemLogsTableProcessedTableManager =
     >;
 typedef $$CheckInsTableCreateCompanionBuilder = CheckInsCompanion Function({
   required String day,
+  Value<String> knee,
   required int pain,
   required Change swelling,
   required Change stiffness,
+  Value<int?> loadPain,
   required DateTime recordedAt,
   Value<int> rowid,
 });
 typedef $$CheckInsTableUpdateCompanionBuilder = CheckInsCompanion Function({
   Value<String> day,
+  Value<String> knee,
   Value<int> pain,
   Value<Change> swelling,
   Value<Change> stiffness,
+  Value<int?> loadPain,
   Value<DateTime> recordedAt,
   Value<int> rowid,
 });
@@ -3068,6 +3169,11 @@ class $$CheckInsTableFilterComposer
   });
   ColumnFilters<String> get day => $composableBuilder(
     column: $table.day,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get knee => $composableBuilder(
+    column: $table.knee,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3087,6 +3193,11 @@ class $$CheckInsTableFilterComposer
         column: $table.stiffness,
         builder: (column) => ColumnWithTypeConverterFilters(column),
       );
+
+  ColumnFilters<int> get loadPain => $composableBuilder(
+    column: $table.loadPain,
+    builder: (column) => ColumnFilters(column),
+  );
 
   ColumnFilters<DateTime> get recordedAt => $composableBuilder(
     column: $table.recordedAt,
@@ -3108,6 +3219,11 @@ class $$CheckInsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get knee => $composableBuilder(
+    column: $table.knee,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get pain => $composableBuilder(
     column: $table.pain,
     builder: (column) => ColumnOrderings(column),
@@ -3120,6 +3236,11 @@ class $$CheckInsTableOrderingComposer
 
   ColumnOrderings<String> get stiffness => $composableBuilder(
     column: $table.stiffness,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get loadPain => $composableBuilder(
+    column: $table.loadPain,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3141,6 +3262,9 @@ class $$CheckInsTableAnnotationComposer
   GeneratedColumn<String> get day =>
       $composableBuilder(column: $table.day, builder: (column) => column);
 
+  GeneratedColumn<String> get knee =>
+      $composableBuilder(column: $table.knee, builder: (column) => column);
+
   GeneratedColumn<int> get pain =>
       $composableBuilder(column: $table.pain, builder: (column) => column);
 
@@ -3149,6 +3273,9 @@ class $$CheckInsTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<Change, String> get stiffness =>
       $composableBuilder(column: $table.stiffness, builder: (column) => column);
+
+  GeneratedColumn<int> get loadPain =>
+      $composableBuilder(column: $table.loadPain, builder: (column) => column);
 
   GeneratedColumn<DateTime> get recordedAt => $composableBuilder(
     column: $table.recordedAt,
@@ -3185,32 +3312,40 @@ class $$CheckInsTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> day = const Value.absent(),
+                Value<String> knee = const Value.absent(),
                 Value<int> pain = const Value.absent(),
                 Value<Change> swelling = const Value.absent(),
                 Value<Change> stiffness = const Value.absent(),
+                Value<int?> loadPain = const Value.absent(),
                 Value<DateTime> recordedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => CheckInsCompanion(
                 day: day,
+                knee: knee,
                 pain: pain,
                 swelling: swelling,
                 stiffness: stiffness,
+                loadPain: loadPain,
                 recordedAt: recordedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String day,
+                Value<String> knee = const Value.absent(),
                 required int pain,
                 required Change swelling,
                 required Change stiffness,
+                Value<int?> loadPain = const Value.absent(),
                 required DateTime recordedAt,
                 Value<int> rowid = const Value.absent(),
               }) => CheckInsCompanion.insert(
                 day: day,
+                knee: knee,
                 pain: pain,
                 swelling: swelling,
                 stiffness: stiffness,
+                loadPain: loadPain,
                 recordedAt: recordedAt,
                 rowid: rowid,
               ),

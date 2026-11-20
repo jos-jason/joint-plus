@@ -97,7 +97,7 @@
     },
     {
       "id": "monkii_partial_squat", "name": "Assisted Partial Squat",
-      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "kind": "reps", "repSec": 6, "sides": "together", "equipment": ["monkii"],
       "summary": "A shallow squat with the straps taking some of your weight.",
       "cues": [
         "Face the anchor, straps at chest height, arms straight",
@@ -121,7 +121,7 @@
     },
     {
       "id": "monkii_squat_90", "name": "Assisted Squat to 90°",
-      "kind": "reps", "sides": "together", "equipment": ["monkii"],
+      "kind": "reps", "repSec": 6, "sides": "together", "equipment": ["monkii"],
       "summary": "A squat to 90° with the straps helping.",
       "cues": [
         "Straps at chest height, lean back slightly",
@@ -134,7 +134,7 @@
     },
     {
       "id": "bodyweight_squat_90", "name": "Squat to 90°",
-      "kind": "reps", "sides": "together", "equipment": ["chair"],
+      "kind": "reps", "repSec": 6, "sides": "together", "equipment": ["chair"],
       "summary": "An unassisted squat with a chair marking the depth.",
       "cues": [
         "Feet shoulder-width, a chair behind you to mark the depth",
@@ -159,7 +159,7 @@
     },
     {
       "id": "monkii_split_squat", "name": "Assisted Split Squat",
-      "kind": "reps", "sides": "each", "equipment": ["monkii"],
+      "kind": "reps", "repSec": 6, "sides": "each", "equipment": ["monkii"],
       "summary": "The start of single-leg strength, with the straps steadying you.",
       "cues": [
         "Hold the straps, one foot forward, back heel up",
@@ -171,7 +171,7 @@
     },
     {
       "id": "step_up", "name": "Step-Up",
-      "kind": "reps", "sides": "each", "equipment": ["step"],
+      "kind": "reps", "repSec": 6, "sides": "each", "equipment": ["step"],
       "summary": "Single-leg strength for stairs and climbing.",
       "cues": [
         "Whole foot on a 15–20 cm step",
@@ -254,7 +254,7 @@
     },
     {
       "id": "bulgarian_split_squat", "name": "Bulgarian Split Squat",
-      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["step"],
+      "kind": "reps", "repSec": 6, "sides": "each", "equipment": ["step"],
       "summary": "Heavy single-leg strength work.",
       "cues": [
         "Back foot on a step or bench behind you",
@@ -266,7 +266,7 @@
     },
     {
       "id": "forward_step_down", "name": "Forward Step-Down",
-      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["step"],
+      "kind": "reps", "repSec": 6, "sides": "each", "equipment": ["step"],
       "summary": "Trains slow, controlled lowering. This is also a key test movement.",
       "cues": [
         "Stand on a 15–20 cm step, the other leg hanging forward",
@@ -278,7 +278,7 @@
     },
     {
       "id": "single_leg_box_squat", "name": "Single-Leg Squat to Box",
-      "kind": "reps", "repSec": 4, "sides": "each", "equipment": ["chair"],
+      "kind": "reps", "repSec": 6, "sides": "each", "equipment": ["chair"],
       "summary": "A full single-leg squat, with a box or chair marking the depth.",
       "cues": [
         "A box or chair behind you, standing on one leg",

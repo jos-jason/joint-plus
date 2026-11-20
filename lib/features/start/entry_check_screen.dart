@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../content/content_providers.dart';
 import '../../content/models.dart';
+import '../../data/data_providers.dart';
+import '../../data/knees.dart';
 import '../../engine/engine_providers.dart';
+import '../../widgets/knee_picker.dart';
 import '../../engine/progression.dart';
 import '../../theme/tokens.dart';
 import '../../widgets/async_content.dart';
@@ -24,6 +27,8 @@ class EntryCheckScreen extends ConsumerStatefulWidget {
 
 class _EntryCheckScreenState extends ConsumerState<EntryCheckScreen> {
   final _answers = <String, bool>{};
+  KneeSetup? _knees;
+  bool _kneesLoaded = false;
   bool _saving = false;
 
   static String question(GateCriterion c) => switch (c.type) {
@@ -39,6 +44,7 @@ class _EntryCheckScreenState extends ConsumerState<EntryCheckScreen> {
 
   Future<void> _start(Program program, int phaseIndex) async {
     setState(() => _saving = true);
+    await saveKneeSetup(ref.read(databaseProvider), _knees!);
     final actions = ref.read(progressionActionsProvider);
     await actions.startAt(phaseIndex);
     // Starting in Phase 1: keep the yes/no checks as its first gate answers.
@@ -65,7 +71,12 @@ class _EntryCheckScreenState extends ConsumerState<EntryCheckScreen> {
           value: ref.watch(activeProgramProvider),
           builder: (program) {
             final gate = program.phases.first.gate;
-            final done = gate.every((c) => _answers.containsKey(c.id));
+            if (!_kneesLoaded) {
+              _kneesLoaded = true;
+              _knees = ref.read(kneeSetupProvider).value;
+            }
+            final done =
+                _knees != null && gate.every((c) => _answers.containsKey(c.id));
             final suggested = suggestStartPhase(program, _answers);
             final other = suggested == 0 ? 1 : 0;
             return Column(
@@ -89,6 +100,28 @@ class _EntryCheckScreenState extends ConsumerState<EntryCheckScreen> {
                           'The same checks that unlock Phase 2. Answer for '
                           "today. If you're not sure, answer No.",
                           style: JType.secondary,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(
+                          JSpace.gutter,
+                          0,
+                          JSpace.gutter,
+                          JSpace.xl,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Which knee are you rehabbing?',
+                              style: JType.body,
+                            ),
+                            const SizedBox(height: JSpace.md),
+                            KneePicker(
+                              value: _knees,
+                              onChanged: (v) => setState(() => _knees = v),
+                            ),
+                          ],
                         ),
                       ),
                       for (final c in gate)
@@ -141,7 +174,7 @@ class _EntryCheckScreenState extends ConsumerState<EntryCheckScreen> {
                       StarkButton(
                         label: done
                             ? 'Start ${program.phases[suggested].name}'
-                            : 'Answer all ${gate.length}',
+                            : 'Answer all ${gate.length + 1}',
                         onPressed: done && !_saving
                             ? () => _start(program, suggested)
                             : null,

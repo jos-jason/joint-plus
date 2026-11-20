@@ -230,10 +230,16 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         _painRules = program.painRules;
         _programId = program.id;
         _phaseId = program.phases[phaseIndex].id;
+        // The session's sides depend on the knee setup: wait for it once.
+        final knees = ref.watch(kneeSetupProvider);
+        if (_flow == null && !knees.hasValue) {
+          return const Scaffold(body: SizedBox.shrink());
+        }
         _flow ??= SessionFlow(
           session: session,
           exercises: ref.read(contentProvider).requireValue.exercises,
           clock: ref.read(clockProvider),
+          knees: knees.value,
         );
         return PopScope(
           canPop: !flow.started,

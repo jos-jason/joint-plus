@@ -89,6 +89,7 @@ class ContentParser {
     if (r == null) return null;
 
     final pain = r.object('painRules');
+    final load = pain?.object('loadTest', required: false);
     final phases = <Phase>[];
     final phaseReaders = r.objects('phases');
     for (var i = 0; i < phaseReaders.length; i++) {
@@ -105,6 +106,13 @@ class ContentParser {
         maxDuring: pain?.integer('maxDuring') ?? 3,
         settleHours: pain?.integer('settleHours') ?? 24,
         morningNoWorse: pain?.boolean('morningNoWorse') ?? true,
+        loadTest: load == null
+            ? null
+            : LoadTest(
+                name: load.str('name'),
+                instructions: load.str('instructions'),
+                maxRise: load.integer('maxRise'),
+              ),
       ),
       redFlags: r.strings('redFlags', minLength: 1),
       phases: phases,

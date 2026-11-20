@@ -10,11 +10,15 @@ class PainScale extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.max = 10,
+    this.semanticPrefix = '',
   });
 
   final int? value;
   final ValueChanged<int> onChanged;
   final int max;
+
+  /// Read before each cell by screen readers, e.g. "Left knee".
+  final String semanticPrefix;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +29,12 @@ class PainScale extends StatelessWidget {
           children: [
             for (var i = 0; i <= max; i++)
               Expanded(
-                child: _Cell(n: i, selected: value == i, onTap: onChanged),
+                child: _Cell(
+                  n: i,
+                  selected: value == i,
+                  onTap: onChanged,
+                  prefix: semanticPrefix,
+                ),
               ),
           ],
         ),
@@ -43,7 +52,14 @@ class PainScale extends StatelessWidget {
 }
 
 class _Cell extends StatelessWidget {
-  const _Cell({required this.n, required this.selected, required this.onTap});
+  const _Cell({
+    required this.n,
+    required this.selected,
+    required this.onTap,
+    required this.prefix,
+  });
+
+  final String prefix;
 
   final int n;
   final bool selected;
@@ -54,7 +70,7 @@ class _Cell extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: 'Pain $n',
+      label: prefix.isEmpty ? 'Pain $n' : '$prefix pain $n',
       excludeSemantics: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

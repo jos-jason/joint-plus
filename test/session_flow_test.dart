@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:joint_plus/content/models.dart';
+import 'package:joint_plus/data/knees.dart';
 import 'package:joint_plus/features/player/session_flow.dart';
 
 void main() {
@@ -146,6 +147,33 @@ void main() {
         'walk': (1, true),
       },
     );
+  });
+
+  test(
+    'with both knees, recovering-leg work runs on each, chosen knee first',
+    () {
+      final f = SessionFlow(
+        session: session,
+        exercises: exercises,
+        knees: const KneeSetup.both(first: Knee.right),
+      );
+      final work = f.steps.whereType<WorkStep>().map(describe).toList();
+      // Lunge is done on each leg; the hold is "recovering leg only".
+      expect(work, containsAllInOrder(['lunge#1-right', 'lunge#1-left']));
+      expect(work, containsAllInOrder(['hold#1-right', 'hold#1-left']));
+      expect(f.steps.whereType<SwitchStep>(), hasLength(3));
+    },
+  );
+
+  test('with one knee set, recovering-leg work runs on that leg only', () {
+    final f = SessionFlow(
+      session: session,
+      exercises: exercises,
+      knees: KneeSetup.one(Knee.left),
+    );
+    final work = f.steps.whereType<WorkStep>().map(describe).toList();
+    expect(work.where((w) => w.startsWith('hold')), ['hold#1-left']);
+    expect(work, containsAllInOrder(['lunge#1-left', 'lunge#1-right']));
   });
 
   test('starts and ends with pain checks, then a summary', () {

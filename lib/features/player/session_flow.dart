@@ -1,17 +1,23 @@
 import '../../content/models.dart';
+import '../../data/knees.dart';
 import '../../data/session_result.dart';
 
 export '../../data/session_result.dart';
 
-/// Which leg a work step is for, when the exercise is one-sided.
-enum LegSide { injured, other }
+/// Which leg a work step is for, when the exercise is one-sided. Injured /
+/// other until the knee setup is chosen; left / right after.
+enum LegSide { injured, other, left, right }
 
 extension LegSideLabel on LegSide {
   String get label => switch (this) {
     LegSide.injured => 'Injured leg',
     LegSide.other => 'Other leg',
+    LegSide.left => 'Left leg',
+    LegSide.right => 'Right leg',
   };
 }
+
+LegSide _leg(Knee k) => k == Knee.left ? LegSide.left : LegSide.right;
 
 /// One screen of the session player.
 sealed class PlayerStep {
@@ -97,6 +103,7 @@ class SessionFlow {
     required this.session,
     required Map<String, Exercise> exercises,
     DateTime Function()? clock,
+    this.knees,
   }) : items = [...session.required, ...session.optional],
        _clock = clock ?? DateTime.now {
     steps = _buildSteps(exercises);
@@ -104,6 +111,9 @@ class SessionFlow {
   }
 
   final SessionTemplate session;
+
+  /// Which knees are in rehab; null keeps "injured leg / other leg".
+  final KneeSetup? knees;
 
   /// Required exercises first, then optional extras.
   final List<Dose> items;
@@ -140,10 +150,13 @@ class SessionFlow {
     final out = <PlayerStep>[const PainStep(before: true)];
     for (final (i, d) in items.indexed) {
       final ex = exercises[d.exerciseId]!;
-      final sides = switch (ex.sides) {
+      final k = knees;
+      final List<LegSide?> sides = switch (ex.sides) {
+        Sides.together => const [null],
+        Sides.each when k != null => k.eachOrder.map(_leg).toList(),
         Sides.each => const [LegSide.injured, LegSide.other],
+        Sides.affected when k != null => k.recoveringOrder.map(_leg).toList(),
         Sides.affected => const [LegSide.injured],
-        Sides.together => const <LegSide?>[null],
       };
       out.add(
         UpNextStep(

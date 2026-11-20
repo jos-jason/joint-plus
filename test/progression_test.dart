@@ -8,11 +8,15 @@ void main() {
 
   CheckIn checkIn(
     String day, {
+    String knee = 'knee',
     int pain = 2,
     Change swelling = Change.same,
     Change stiffness = Change.same,
+    int? load,
   }) => CheckIn(
     day: day,
+    knee: knee,
+    loadPain: load,
     pain: pain,
     swelling: swelling,
     stiffness: stiffness,
@@ -47,6 +51,49 @@ void main() {
       expect(days[1].reasons.single, contains('4/10'));
       expect(days[2].reasons.single, contains('swelling'));
       expect(days[3].reasons.single, contains('from 2 to 4'));
+    });
+
+    test('two knees: each compared with its own previous morning', () {
+      final days = evaluateRuleDays(
+        checkIns: [
+          checkIn('2026-11-10', knee: 'left', pain: 2),
+          checkIn('2026-11-10', knee: 'right', pain: 4),
+          // Right improves to 3; left stays 2: both fine.
+          checkIn('2026-11-11', knee: 'left', pain: 2),
+          checkIn('2026-11-11', knee: 'right', pain: 3),
+          // Left goes up: the whole morning breaks the rules.
+          checkIn('2026-11-12', knee: 'left', pain: 3),
+          checkIn('2026-11-12', knee: 'right', pain: 3),
+        ],
+        sessions: const [],
+        rules: rules,
+      );
+      expect(days.map((d) => d.met), [true, true, false]);
+      expect(
+        days.last.reasons.single,
+        'Left knee: morning pain up from 2 to 3',
+      );
+    });
+
+    test('tendon test may rise by its limit, not more', () {
+      const withTest = PainRules(
+        maxDuring: 3,
+        settleHours: 24,
+        morningNoWorse: true,
+        loadTest: LoadTest(name: 'Tendon test', instructions: '', maxRise: 1),
+      );
+      final days = evaluateRuleDays(
+        checkIns: [
+          checkIn('2026-11-10', load: 2),
+          checkIn('2026-11-11', load: 3), // +1: allowed
+          checkIn('2026-11-12', load: 5), // +2: broken
+          checkIn('2026-11-13'), // skipped test: not judged
+        ],
+        sessions: const [],
+        rules: withTest,
+      );
+      expect(days.map((d) => d.met), [true, true, false, true]);
+      expect(days[2].reasons.single, 'Tendon test up from 3 to 5');
     });
 
     test('streak counts back to the last broken day, from the stint start', () {

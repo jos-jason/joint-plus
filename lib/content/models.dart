@@ -228,11 +228,28 @@ class Phase {
   final List<GateCriterion> gate;
 }
 
+/// A quick loading test done each morning (e.g. a single-leg squat that
+/// loads the patellar tendon), rated 0–10 per knee.
+class LoadTest {
+  const LoadTest({
+    required this.name,
+    required this.instructions,
+    required this.maxRise,
+  });
+
+  final String name;
+  final String instructions;
+
+  /// The biggest rise from the previous morning that still meets the rules.
+  final int maxRise;
+}
+
 class PainRules {
   const PainRules({
     required this.maxDuring,
     required this.settleHours,
     required this.morningNoWorse,
+    this.loadTest,
   });
 
   /// Highest acceptable pain (0–10) during exercise.
@@ -243,6 +260,9 @@ class PainRules {
 
   /// Next-morning pain/stiffness must be no worse than baseline.
   final bool morningNoWorse;
+
+  /// Optional morning load test, asked in the check-in.
+  final LoadTest? loadTest;
 }
 
 class Program {
