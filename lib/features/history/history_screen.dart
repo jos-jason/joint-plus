@@ -12,6 +12,7 @@ import '../../util/dates.dart';
 import '../../widgets/async_content.dart';
 import '../../widgets/page_header.dart';
 import '../../widgets/stark_primitives.dart';
+import '../today/day_plan.dart';
 import 'pain_trend.dart';
 
 /// History: the 4-week session grid, morning pain trend, phase milestones,
@@ -29,7 +30,15 @@ class HistoryScreen extends ConsumerWidget {
       child: AsyncContent(
         value: ref.watch(sessionLogsProvider),
         builder: (sessions) {
-          final days = {for (final s in sessions) dayKey(s.log.startedAt)};
+          final days = <String, Set<SessionKind>>{};
+          for (final s in sessions) {
+            (days[dayKey(s.log.startedAt)] ??= {}).add(s.log.kind);
+          }
+          // Sessions arrive newest first, so days come out newest first too.
+          final byDay = <String, List<SessionSummary>>{};
+          for (final s in sessions) {
+            (byDay[dayKey(s.log.startedAt)] ??= []).add(s);
+          }
           return ListView(
             children: [
               PageHeader(
@@ -56,7 +65,21 @@ class HistoryScreen extends ConsumerWidget {
               const SizedBox(height: JSpace.md),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: JSpace.gutter),
-                child: _SessionGrid(weeks: _weeks, now: now, sessionDays: days),
+                child: _SessionGrid(
+                  weeks: _weeks,
+                  now: now,
+                  sessionDays: days,
+                  strengthDays: ref.watch(strengthDaysProvider),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(
+                  JSpace.gutter,
+                  JSpace.sm,
+                  JSpace.gutter,
+                  0,
+                ),
+                child: _GridLegend(),
               ),
               const SizedBox(height: JSpace.xl),
               _Section(
@@ -71,8 +94,23 @@ class HistoryScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: JSpace.sm),
               ],
-              const Hairline(),
-              for (final s in sessions) _SessionRow(s),
+              for (final MapEntry(key: day, value: list) in byDay.entries) ...[
+                const Hairline(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    JSpace.gutter,
+                    JSpace.md,
+                    JSpace.gutter,
+                    0,
+                  ),
+                  child: Text(
+                    shortDate(DateTime.parse(day)),
+                    style: JType.heading,
+                  ),
+                ),
+                for (final s in list) _SessionRow(s),
+              ],
+              const SizedBox(height: JSpace.xl),
             ],
           );
         },
@@ -197,7 +235,8 @@ class _SessionRow extends StatelessWidget {
     final log = s.log;
     final minutes = log.endedAt.difference(log.startedAt).inMinutes;
     return StarkRow(
-      title: '${log.kind.label}  ·  ${shortDate(log.startedAt)}',
+      leading: _KindMark(log.kind),
+      title: log.kind.label,
       subtitle:
           '${s.exercisesDone}/${s.exercisesPlanned} exercises  ·  '
           '${minutes < 1 ? '< 1' : minutes} min  ·  '
@@ -206,18 +245,74 @@ class _SessionRow extends StatelessWidget {
   }
 }
 
+/// Strength: a full green square. Mobility: a small one.
+class _KindMark extends StatelessWidget {
+  const _KindMark(this.kind);
+
+  final SessionKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final strength = kind == SessionKind.strength;
+    return SizedBox.square(
+      dimension: 18,
+      child: Center(
+        child: Container(
+          width: strength ? 18 : 8,
+          height: strength ? 18 : 8,
+          color: JColors.green,
+        ),
+      ),
+    );
+  }
+}
+
+class _GridLegend extends StatelessWidget {
+  const _GridLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    Widget item(Widget mark, String text) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        mark,
+        const SizedBox(width: JSpace.sm),
+        Text(text, style: JType.secondary),
+      ],
+    );
+    return Wrap(
+      spacing: JSpace.lg,
+      runSpacing: JSpace.sm,
+      children: [
+        item(const _KindMark(SessionKind.strength), 'Strength'),
+        item(const _KindMark(SessionKind.daily), 'Mobility'),
+        item(
+          Container(width: 18, height: 3, color: JColors.green),
+          'Strength day',
+        ),
+      ],
+    );
+  }
+}
+
 /// 7-column grid of the last [weeks] weeks, Monday first, this week last.
-/// Green = a session was logged that day. Today has a white outline.
+/// A full green cell is a strength session, a small square a mobility one
+/// (black on green when both). A green line along the bottom marks the
+/// planned strength days. Today has a white outline.
 class _SessionGrid extends StatelessWidget {
   const _SessionGrid({
     required this.weeks,
     required this.now,
     required this.sessionDays,
+    required this.strengthDays,
   });
 
   final int weeks;
   final DateTime now;
-  final Set<String> sessionDays;
+  final Map<String, Set<SessionKind>> sessionDays;
+
+  /// Weekdays planned for strength (DateTime.monday … DateTime.sunday).
+  final Set<int> strengthDays;
 
   @override
   Widget build(BuildContext context) {
@@ -267,15 +362,26 @@ class _SessionGrid extends StatelessWidget {
 
   Widget _cell(DateTime day, String today) {
     final key = dayKey(day);
-    final done = sessionDays.contains(key);
+    final kinds = sessionDays[key] ?? const {};
+    final strength = kinds.contains(SessionKind.strength);
+    final mobility = kinds.contains(SessionKind.daily);
+    final planned = strengthDays.contains(day.weekday);
     final isToday = key == today;
     final future = day.isAfter(now);
+    final done = [if (strength) 'strength', if (mobility) 'mobility'];
     return Semantics(
       container: true,
-      label: '${shortDate(day)}${done ? ', session done' : ''}',
+      label: [
+        shortDate(day),
+        if (done.isNotEmpty)
+          done.join(' and ')
+        else if (!future)
+          'nothing logged',
+        if (planned) 'strength day',
+      ].join(', '),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: done ? JColors.green : Colors.transparent,
+          color: strength ? JColors.green : Colors.transparent,
           border: Border.all(
             color: isToday
                 ? JColors.white
@@ -283,6 +389,32 @@ class _SessionGrid extends StatelessWidget {
                 ? JColors.line.withValues(alpha: 0.08)
                 : JColors.line,
           ),
+        ),
+        child: Stack(
+          children: [
+            if (mobility)
+              Center(
+                child: FractionallySizedBox(
+                  widthFactor: 0.32,
+                  heightFactor: 0.32,
+                  child: ColoredBox(
+                    color: strength ? JColors.black : JColors.green,
+                  ),
+                ),
+              ),
+            if (planned)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 3,
+                  color: strength
+                      ? JColors.black
+                      : future
+                      ? JColors.green.withValues(alpha: 0.35)
+                      : JColors.green,
+                ),
+              ),
+          ],
         ),
       ),
     );

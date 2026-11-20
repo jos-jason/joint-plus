@@ -11,6 +11,7 @@ import 'package:joint_plus/content/models.dart';
 import 'package:joint_plus/data/data_providers.dart';
 import 'package:joint_plus/data/database.dart';
 import 'package:joint_plus/data/knees.dart';
+import 'package:joint_plus/data/session_result.dart';
 import 'package:joint_plus/reminders/reminder_providers.dart';
 import 'package:joint_plus/reminders/reminder_scheduler.dart';
 
@@ -28,6 +29,7 @@ void main() {
     WidgetTester tester, {
     Future<void> Function(AppDatabase db)? seed,
     ReminderScheduler? reminders,
+    DateTime? now,
   }) async {
     tester.view.physicalSize = const Size(1206, 2622);
     tester.view.devicePixelRatio = 3;
@@ -48,7 +50,9 @@ void main() {
           reminderSchedulerProvider.overrideWithValue(
             reminders ?? NoReminders(),
           ),
-          clockProvider.overrideWithValue(() => DateTime(2026, 11, 14, 8)),
+          clockProvider.overrideWithValue(
+            () => now ?? DateTime(2026, 11, 14, 8), // a Saturday
+          ),
         ],
         child: const JointPlusApp(),
       ),
@@ -69,25 +73,70 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('Today shows the phase and the strength session exercises', (
+  /// Today's STRENGTH / MOBILITY tabs sit below the day checklist.
+  Future<void> tapTab(WidgetTester tester, String tab) async {
+    await scrollTo(tester, find.text(tab));
+    await tester.tap(find.text(tab));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a rest day shows mobility first, strength as optional', (
     tester,
   ) async {
-    await pumpApp(tester);
+    await pumpApp(tester); // Saturday; strength days default to Mon/Wed/Fri
 
-    expect(find.text('START SESSION'), findsOneWidget);
-    expect(find.text('Calm & Activate'), findsOneWidget);
-    expect(find.text('Shallow Wall Sit'), findsOneWidget);
+    expect(find.text('Mobility day'), findsOneWidget);
+    expect(
+      find.text('Mobility only today. Next strength day: Mon 16 Nov.'),
+      findsOneWidget,
+    );
+    expect(find.text('Rest day  ·  next Mon 16 Nov'), findsOneWidget);
+    expect(find.text('START MOBILITY'), findsOneWidget);
+    await scrollTo(tester, find.text('Heel Slide'));
+
+    // Strength is still there to do as an extra.
+    await tapTab(tester, 'STRENGTH');
+    await scrollTo(tester, find.text('Shallow Wall Sit'));
     expect(find.text('5 × 30–45 s'), findsOneWidget);
+    expect(find.text('START STRENGTH ANYWAY'), findsOneWidget);
   });
 
-  testWidgets('Today switches to the mobility session', (tester) async {
-    await pumpApp(tester);
+  testWidgets('a strength day lists both and ticks off what is done', (
+    tester,
+  ) async {
+    final monday = DateTime(2026, 11, 16, 9);
+    await pumpApp(
+      tester,
+      now: monday,
+      seed: (db) => db.saveSession(
+        programId: 'knee_meniscus',
+        phaseId: 'p1',
+        result: SessionResult(
+          kind: SessionKind.daily,
+          startedAt: DateTime(2026, 11, 16, 7),
+          endedAt: DateTime(2026, 11, 16, 7, 10),
+          painBefore: 1,
+          painAfter: 1,
+          items: const [
+            ItemResult(
+              exerciseId: 'heel_slide',
+              setsPlanned: 2,
+              setsDone: 2,
+              optional: false,
+            ),
+          ],
+        ),
+      ),
+    );
 
-    await tester.tap(find.text('MOBILITY'));
-    await tester.pumpAndSettle();
-    expect(find.text('Mobility'), findsOneWidget); // header title
-    await scrollTo(tester, find.text('Heel Slide'));
-    expect(find.text('Heel Slide'), findsOneWidget);
+    expect(find.text('Strength day'), findsOneWidget);
+    expect(find.text('Mobility and strength today.'), findsOneWidget);
+    expect(find.text('Done  ·  1/1 exercises'), findsOneWidget); // mobility
+    expect(find.textContaining('due today'), findsOneWidget); // strength
+    // Opens on what's still to do.
+    expect(find.text('START STRENGTH'), findsOneWidget);
+    await tapTab(tester, 'MOBILITY');
+    expect(find.text('DO MOBILITY AGAIN'), findsOneWidget);
   });
 
   testWidgets('exercise detail shows dose and cues, and links to swaps', (
@@ -95,6 +144,8 @@ void main() {
   ) async {
     await pumpApp(tester);
 
+    await tapTab(tester, 'STRENGTH');
+    await scrollTo(tester, find.text('Shallow Wall Sit'));
     await tester.tap(find.text('Shallow Wall Sit'));
     await tester.pumpAndSettle();
     expect(find.text('5 × 30–45 s'), findsOneWidget);
@@ -145,6 +196,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byIcon(Icons.tune));
     await tester.pumpAndSettle();
+    await scrollTo(tester, find.text('Components'));
     await tester.tap(find.text('Components'));
     await tester.pumpAndSettle();
     expect(find.text('TIMER RING'), findsOneWidget);
@@ -153,7 +205,9 @@ void main() {
   /// Opens the strength session and gets past the opening pain check.
   /// From here timers run, so tests pump fixed durations, not pumpAndSettle.
   Future<void> startSession(WidgetTester tester, {String pain = '2'}) async {
-    await tester.tap(find.text('START SESSION'));
+    // Saturday is a rest day, so strength starts as an extra.
+    await tapTab(tester, 'STRENGTH');
+    await tester.tap(find.text('START STRENGTH ANYWAY'));
     await tester.pumpAndSettle();
     expect(find.text('How does the knee feel right now?'), findsOneWidget);
     await tester.tap(find.text(pain));
@@ -229,15 +283,16 @@ void main() {
     expect(find.text('1 / 20'), findsOneWidget); // sets
     await tester.tap(find.text('DONE'));
     await tester.pumpAndSettle();
-    expect(find.text('START SESSION'), findsOneWidget);
+    expect(find.text('DO STRENGTH AGAIN'), findsOneWidget); // strength done
 
     // The session was logged.
     await tester.tap(find.text('HISTORY'));
     await tester.pumpAndSettle();
     expect(find.text('1 session'), findsOneWidget);
-    expect(find.text('Strength  ·  Sat 14 Nov'), findsOneWidget);
+    expect(find.text('Sat 14 Nov'), findsOneWidget); // day heading
+    expect(find.text('Strength'), findsWidgets);
     expect(find.textContaining('0/6 exercises'), findsOneWidget);
-    expect(find.bySemanticsLabel('Sat 14 Nov, session done'), findsOneWidget);
+    expect(find.bySemanticsLabel('Sat 14 Nov, strength'), findsOneWidget);
   });
 
   testWidgets('reps count themselves at the exercise pace', (tester) async {
@@ -304,7 +359,7 @@ void main() {
     await tester.tap(find.text('SAVE'));
     await tester.pumpAndSettle();
 
-    expect(find.text('START SESSION'), findsOneWidget);
+    expect(find.text('Mobility day'), findsOneWidget);
     expect(
       find.text('Pain 1  ·  swelling less  ·  stiffness same'),
       findsOneWidget,
@@ -337,7 +392,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('END SESSION'));
     await tester.pumpAndSettle();
-    expect(find.text('START SESSION'), findsOneWidget);
+    expect(find.text('START STRENGTH ANYWAY'), findsOneWidget); // not logged
   });
 
   group('progression', () {
@@ -468,10 +523,11 @@ void main() {
       await tester.tap(find.text('DROP BACK'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Calm & Activate'), findsOneWidget);
       // The new stint starts today, so yesterday's flare no longer counts:
       // only this morning's broken day remains → repeat the dose.
       expect(find.text('REPEAT THIS DOSE'), findsOneWidget);
+      await scrollTo(tester, find.text('Calm & Activate'));
+      expect(find.text('Calm & Activate'), findsOneWidget);
     });
   });
 
@@ -622,5 +678,45 @@ void main() {
       expect(find.text('START EACH EXERCISE WITH'), findsOneWidget);
       expect(find.textContaining('run on both'), findsOneWidget);
     });
+  });
+
+  testWidgets('History shows which days had strength and which mobility', (
+    tester,
+  ) async {
+    Future<void> log(AppDatabase db, SessionKind kind, int day) =>
+        db.saveSession(
+          programId: 'knee_meniscus',
+          phaseId: 'p1',
+          result: SessionResult(
+            kind: kind,
+            startedAt: DateTime(2026, 11, day, 18),
+            endedAt: DateTime(2026, 11, day, 18, 30),
+            painBefore: 1,
+            painAfter: 2,
+            items: const [],
+          ),
+        );
+    await pumpApp(
+      tester,
+      seed: (db) async {
+        await log(db, SessionKind.strength, 13); // Friday
+        await log(db, SessionKind.daily, 13);
+        await log(db, SessionKind.daily, 12); // Thursday
+      },
+    );
+
+    await tester.tap(find.text('HISTORY'));
+    await tester.pumpAndSettle();
+    expect(
+      find.bySemanticsLabel('Fri 13 Nov, strength and mobility, strength day'),
+      findsOneWidget,
+    );
+    expect(find.bySemanticsLabel('Thu 12 Nov, mobility'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel('Wed 11 Nov, nothing logged, strength day'),
+      findsOneWidget,
+    );
+    await scrollTo(tester, find.text('Thu 12 Nov'));
+    expect(find.text('Fri 13 Nov'), findsOneWidget);
   });
 }

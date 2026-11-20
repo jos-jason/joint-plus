@@ -101,10 +101,12 @@ List<RuleDay> evaluateRuleDays({
     for (final c in rows) {
       final who = c.knee == singleKneeKey ? '' : '${checkInKeyLabel(c.knee)}: ';
       final before = previous[c.knee];
-      if (c.swelling == Change.more)
+      if (c.swelling == Change.more) {
         reasons.add('${who}more swelling this morning');
-      if (c.stiffness == Change.more)
+      }
+      if (c.stiffness == Change.more) {
         reasons.add('${who}more stiffness this morning');
+      }
       if (rules.morningNoWorse && before != null && c.pain > before.pain) {
         reasons.add('${who}morning pain up from ${before.pain} to ${c.pain}');
       }

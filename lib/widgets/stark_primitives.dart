@@ -21,8 +21,12 @@ class SectionLabel extends StatelessWidget {
   final Color color;
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text.toUpperCase(), style: JType.label.copyWith(color: color));
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: JType.label.copyWith(color: color),
+    overflow: TextOverflow.ellipsis,
+    maxLines: 2,
+  );
 }
 
 /// A tappable list row: label on the left, optional value/trailing on the right,

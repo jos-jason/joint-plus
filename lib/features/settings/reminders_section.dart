@@ -76,6 +76,12 @@ class RemindersSection extends ConsumerWidget {
                   days: s.strengthDays,
                   onChanged: (days) => save(s.copyWith(strengthDays: days)),
                 ),
+                const SizedBox(height: JSpace.sm),
+                const Text(
+                  'Your strength days. Today follows them even with the '
+                  'reminder off.',
+                  style: JType.secondary,
+                ),
                 if (s.strengthDaysBackToBack) ...[
                   const SizedBox(height: JSpace.sm),
                   const Text(

@@ -45,7 +45,7 @@ class PageHeader extends StatelessWidget {
                     ),
                   )
                 else if (label != null)
-                  SectionLabel(label!),
+                  Flexible(child: SectionLabel(label!)),
                 const Spacer(),
                 ?trailing,
               ],
